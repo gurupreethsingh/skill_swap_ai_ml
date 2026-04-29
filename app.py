@@ -92,6 +92,87 @@ class SkillReview(db.Model):
     reviewed_user = db.relationship("User", foreign_keys=[reviewed_user_id], backref="received_reviews")
 
 
+class CreditWallet(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), unique=True, nullable=False)
+    balance = db.Column(db.Integer, default=20)
+    total_earned = db.Column(db.Integer, default=20)
+    total_spent = db.Column(db.Integer, default=0)
+
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship("User", backref="credit_wallet", uselist=False)
+
+
+class CreditTransaction(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    amount = db.Column(db.Integer, nullable=False)
+    transaction_type = db.Column(db.String(50), nullable=False)
+    reason = db.Column(db.String(255), nullable=False)
+
+    related_request_id = db.Column(db.Integer, db.ForeignKey("skill_exchange_request.id"), nullable=True)
+
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship("User", backref="credit_transactions")
+    related_request = db.relationship("SkillExchangeRequest", backref="credit_transactions")
+
+
+class SkillVerification(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+
+    skill_name = db.Column(db.String(150), nullable=False)
+    proof_title = db.Column(db.String(180), nullable=False)
+    proof_link = db.Column(db.String(500), nullable=True)
+    description = db.Column(db.Text, nullable=True)
+
+    status = db.Column(db.String(50), default="pending")
+    admin_note = db.Column(db.Text, nullable=True)
+
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    reviewed_at = db.Column(db.DateTime, nullable=True)
+
+    user = db.relationship("User", backref="skill_verifications")
+
+
+class SkillRequestPost(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+
+    title = db.Column(db.String(180), nullable=False)
+    skill_needed = db.Column(db.String(150), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    preferred_exchange_skill = db.Column(db.String(150), nullable=True)
+
+    status = db.Column(db.String(50), default="open")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    closed_at = db.Column(db.DateTime, nullable=True)
+
+    user = db.relationship("User", backref="skill_request_posts")
+
+
+class SkillRequestResponse(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+
+    post_id = db.Column(db.Integer, db.ForeignKey("skill_request_post.id"), nullable=False)
+    responder_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+
+    message = db.Column(db.Text, nullable=False)
+    offered_skill = db.Column(db.String(150), nullable=True)
+
+    status = db.Column(db.String(50), default="pending")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    post = db.relationship("SkillRequestPost", backref="responses")
+    responder = db.relationship("User", backref="skill_request_responses")
+
+
 # ============================================================
 # BASIC HELPERS
 # ============================================================
@@ -477,6 +558,174 @@ def has_user_reviewed_request(request_id, reviewer_id):
 
 
 # ============================================================
+# MODULES 6, 7, 8 HELPERS
+# ============================================================
+
+def get_or_create_wallet(user_id):
+    wallet = CreditWallet.query.filter_by(user_id=user_id).first()
+
+    if wallet:
+        return wallet
+
+    wallet = CreditWallet(
+        user_id=user_id,
+        balance=20,
+        total_earned=20,
+        total_spent=0
+    )
+
+    db.session.add(wallet)
+
+    transaction = CreditTransaction(
+        user_id=user_id,
+        amount=20,
+        transaction_type="signup_bonus",
+        reason="Signup bonus credits"
+    )
+
+    db.session.add(transaction)
+    db.session.commit()
+
+    return wallet
+
+
+def add_credits(user_id, amount, reason, transaction_type="earned", related_request_id=None):
+    wallet = get_or_create_wallet(user_id)
+
+    wallet.balance += amount
+    wallet.total_earned += amount
+    wallet.updated_at = datetime.utcnow()
+
+    transaction = CreditTransaction(
+        user_id=user_id,
+        amount=amount,
+        transaction_type=transaction_type,
+        reason=reason,
+        related_request_id=related_request_id
+    )
+
+    db.session.add(transaction)
+    db.session.commit()
+
+
+def spend_credits(user_id, amount, reason, transaction_type="spent", related_request_id=None):
+    wallet = get_or_create_wallet(user_id)
+
+    if wallet.balance < amount:
+        return False
+
+    wallet.balance -= amount
+    wallet.total_spent += amount
+    wallet.updated_at = datetime.utcnow()
+
+    transaction = CreditTransaction(
+        user_id=user_id,
+        amount=-amount,
+        transaction_type=transaction_type,
+        reason=reason,
+        related_request_id=related_request_id
+    )
+
+    db.session.add(transaction)
+    db.session.commit()
+
+    return True
+
+
+def reward_accepted_request(exchange_request):
+    existing_sender_reward = CreditTransaction.query.filter_by(
+        user_id=exchange_request.sender_id,
+        related_request_id=exchange_request.id,
+        transaction_type="accepted_request_reward"
+    ).first()
+
+    existing_receiver_reward = CreditTransaction.query.filter_by(
+        user_id=exchange_request.receiver_id,
+        related_request_id=exchange_request.id,
+        transaction_type="accepted_request_reward"
+    ).first()
+
+    if not existing_sender_reward:
+        add_credits(
+            exchange_request.sender_id,
+            5,
+            "Credits earned for accepted skill exchange",
+            "accepted_request_reward",
+            exchange_request.id
+        )
+
+    if not existing_receiver_reward:
+        add_credits(
+            exchange_request.receiver_id,
+            5,
+            "Credits earned for accepting skill exchange",
+            "accepted_request_reward",
+            exchange_request.id
+        )
+
+
+def get_credit_stats_for_user(user_id):
+    wallet = get_or_create_wallet(user_id)
+
+    transaction_count = CreditTransaction.query.filter_by(user_id=user_id).count()
+
+    return {
+        "balance": wallet.balance,
+        "total_earned": wallet.total_earned,
+        "total_spent": wallet.total_spent,
+        "transaction_count": transaction_count,
+    }
+
+
+def get_platform_credit_stats():
+    total_balance = db.session.query(db.func.sum(CreditWallet.balance)).scalar() or 0
+    total_earned = db.session.query(db.func.sum(CreditWallet.total_earned)).scalar() or 0
+    total_spent = db.session.query(db.func.sum(CreditWallet.total_spent)).scalar() or 0
+
+    return {
+        "total_balance": total_balance,
+        "total_earned": total_earned,
+        "total_spent": total_spent,
+        "transaction_count": CreditTransaction.query.count(),
+    }
+
+
+def get_verification_stats_for_user(user_id):
+    return {
+        "total": SkillVerification.query.filter_by(user_id=user_id).count(),
+        "pending": SkillVerification.query.filter_by(user_id=user_id, status="pending").count(),
+        "approved": SkillVerification.query.filter_by(user_id=user_id, status="approved").count(),
+        "rejected": SkillVerification.query.filter_by(user_id=user_id, status="rejected").count(),
+    }
+
+
+def get_platform_verification_stats():
+    return {
+        "total": SkillVerification.query.count(),
+        "pending": SkillVerification.query.filter_by(status="pending").count(),
+        "approved": SkillVerification.query.filter_by(status="approved").count(),
+        "rejected": SkillVerification.query.filter_by(status="rejected").count(),
+    }
+
+
+def get_skill_feed_stats_for_user(user_id):
+    return {
+        "posts": SkillRequestPost.query.filter_by(user_id=user_id).count(),
+        "open_posts": SkillRequestPost.query.filter_by(user_id=user_id, status="open").count(),
+        "responses": SkillRequestResponse.query.filter_by(responder_id=user_id).count(),
+    }
+
+
+def get_platform_feed_stats():
+    return {
+        "total_posts": SkillRequestPost.query.count(),
+        "open_posts": SkillRequestPost.query.filter_by(status="open").count(),
+        "closed_posts": SkillRequestPost.query.filter_by(status="closed").count(),
+        "responses": SkillRequestResponse.query.count(),
+    }
+
+
+# ============================================================
 # AUTH ROUTES
 # ============================================================
 
@@ -512,6 +761,8 @@ def register():
         db.session.add(new_user)
         db.session.commit()
 
+        get_or_create_wallet(new_user.id)
+
         flash("Account created successfully. Please login.", "success")
         return redirect(url_for("login"))
 
@@ -529,6 +780,8 @@ def login():
         if not user or not check_password_hash(user.password, password):
             flash("Invalid email or password.", "danger")
             return redirect(url_for("login"))
+
+        get_or_create_wallet(user.id)
 
         session["user_id"] = user.id
         session["full_name"] = user.full_name
@@ -608,6 +861,10 @@ def user_dashboard():
     request_stats = get_request_stats_for_user(user.id)
     chat_stats = get_chat_stats_for_user(user.id)
     review_stats = get_review_stats_for_user(user.id)
+    credit_stats = get_credit_stats_for_user(user.id)
+    verification_stats = get_verification_stats_for_user(user.id)
+    feed_stats = get_skill_feed_stats_for_user(user.id)
+
     suggested_matches = get_ai_matches_for_user(user, limit=3)
 
     recent_received_requests = SkillExchangeRequest.query.filter_by(
@@ -623,6 +880,14 @@ def user_dashboard():
     recent_reviews = SkillReview.query.filter_by(
         reviewed_user_id=user.id
     ).order_by(SkillReview.created_at.desc()).limit(4).all()
+
+    recent_verifications = SkillVerification.query.filter_by(
+        user_id=user.id
+    ).order_by(SkillVerification.created_at.desc()).limit(4).all()
+
+    recent_feed_posts = SkillRequestPost.query.filter_by(
+        user_id=user.id
+    ).order_by(SkillRequestPost.created_at.desc()).limit(4).all()
 
     stats = {
         "skills_offered": len(split_skills(user.skills_offered)),
@@ -640,10 +905,15 @@ def user_dashboard():
         request_stats=request_stats,
         chat_stats=chat_stats,
         review_stats=review_stats,
+        credit_stats=credit_stats,
+        verification_stats=verification_stats,
+        feed_stats=feed_stats,
         recent_received_requests=recent_received_requests,
         recent_sent_requests=recent_sent_requests,
         recent_chats=recent_chats,
-        recent_reviews=recent_reviews
+        recent_reviews=recent_reviews,
+        recent_verifications=recent_verifications,
+        recent_feed_posts=recent_feed_posts
     )
 
 
@@ -667,6 +937,9 @@ def superadmin_dashboard():
     request_stats = get_platform_request_stats()
     chat_stats = get_platform_chat_stats()
     review_stats = get_platform_review_stats()
+    credit_stats = get_platform_credit_stats()
+    verification_stats = get_platform_verification_stats()
+    feed_stats = get_platform_feed_stats()
 
     recent_requests = SkillExchangeRequest.query.order_by(
         SkillExchangeRequest.created_at.desc()
@@ -680,6 +953,14 @@ def superadmin_dashboard():
         SkillReview.created_at.desc()
     ).limit(8).all()
 
+    recent_verifications = SkillVerification.query.order_by(
+        SkillVerification.created_at.desc()
+    ).limit(8).all()
+
+    recent_feed_posts = SkillRequestPost.query.order_by(
+        SkillRequestPost.created_at.desc()
+    ).limit(8).all()
+
     return render_template(
         "superadmin_dashboard.html",
         users=users,
@@ -690,9 +971,14 @@ def superadmin_dashboard():
         request_stats=request_stats,
         chat_stats=chat_stats,
         review_stats=review_stats,
+        credit_stats=credit_stats,
+        verification_stats=verification_stats,
+        feed_stats=feed_stats,
         recent_requests=recent_requests,
         recent_messages=recent_messages,
-        recent_reviews=recent_reviews
+        recent_reviews=recent_reviews,
+        recent_verifications=recent_verifications,
+        recent_feed_posts=recent_feed_posts
     )
 
 
@@ -777,6 +1063,12 @@ def send_request(receiver_id):
             flash("Please select both requested skill and offered skill.", "danger")
             return redirect(url_for("send_request", receiver_id=receiver.id))
 
+        wallet = get_or_create_wallet(sender.id)
+
+        if wallet.balance < 2:
+            flash("You need at least 2 credits to send a skill exchange request.", "danger")
+            return redirect(url_for("my_wallet"))
+
         exchange_request = SkillExchangeRequest(
             sender_id=sender.id,
             receiver_id=receiver.id,
@@ -789,7 +1081,15 @@ def send_request(receiver_id):
         db.session.add(exchange_request)
         db.session.commit()
 
-        flash("Skill exchange request sent successfully.", "success")
+        spend_credits(
+            sender.id,
+            2,
+            "Credits spent to send skill exchange request",
+            "request_fee",
+            exchange_request.id
+        )
+
+        flash("Skill exchange request sent successfully. 2 credits were used.", "success")
         return redirect(url_for("my_requests"))
 
     return render_template(
@@ -853,7 +1153,9 @@ def accept_request(request_id):
 
     db.session.commit()
 
-    flash("Request accepted successfully. Chat is now enabled.", "success")
+    reward_accepted_request(exchange_request)
+
+    flash("Request accepted successfully. Both users received 5 credits. Chat is now enabled.", "success")
     return redirect(url_for("chat_room", request_id=exchange_request.id))
 
 
@@ -1118,7 +1420,15 @@ def add_review(request_id):
         db.session.add(review)
         db.session.commit()
 
-        flash("Review submitted successfully.", "success")
+        add_credits(
+            user.id,
+            3,
+            "Credits earned for submitting review",
+            "review_reward",
+            exchange_request.id
+        )
+
+        flash("Review submitted successfully. You earned 3 credits.", "success")
         return redirect(url_for("my_reviews"))
 
     return render_template(
@@ -1184,6 +1494,425 @@ def admin_reviews():
     )
 
 
+# ============================================================
+# MODULE 6: CREDIT / TOKEN SYSTEM ROUTES
+# ============================================================
+
+@app.route("/my-wallet")
+def my_wallet():
+    if not login_required():
+        flash("Please login first.", "danger")
+        return redirect(url_for("login"))
+
+    user = get_logged_user()
+    wallet = get_or_create_wallet(user.id)
+
+    transactions = CreditTransaction.query.filter_by(
+        user_id=user.id
+    ).order_by(CreditTransaction.created_at.desc()).all()
+
+    credit_stats = get_credit_stats_for_user(user.id)
+
+    return render_template(
+        "my_wallet.html",
+        user=user,
+        wallet=wallet,
+        transactions=transactions,
+        credit_stats=credit_stats
+    )
+
+
+@app.route("/admin/credits")
+def admin_credits():
+    if not login_required():
+        flash("Please login first.", "danger")
+        return redirect(url_for("login"))
+
+    if not superadmin_required():
+        flash("Access denied. Superadmin only.", "danger")
+        return redirect(url_for("user_dashboard"))
+
+    wallets = CreditWallet.query.order_by(CreditWallet.balance.desc()).all()
+
+    transactions = CreditTransaction.query.order_by(
+        CreditTransaction.created_at.desc()
+    ).limit(100).all()
+
+    credit_stats = get_platform_credit_stats()
+
+    return render_template(
+        "admin_credits.html",
+        wallets=wallets,
+        transactions=transactions,
+        credit_stats=credit_stats
+    )
+
+
+@app.route("/admin/credits/add/<int:user_id>", methods=["POST"])
+def admin_add_credits(user_id):
+    if not login_required() or not superadmin_required():
+        flash("Unauthorized action.", "danger")
+        return redirect(url_for("login"))
+
+    amount = int(request.form.get("amount", 0))
+    reason = request.form.get("reason", "Admin credit adjustment").strip()
+
+    if amount <= 0:
+        flash("Amount must be greater than 0.", "danger")
+        return redirect(url_for("admin_credits"))
+
+    add_credits(user_id, amount, reason, "admin_added")
+
+    flash("Credits added successfully.", "success")
+    return redirect(url_for("admin_credits"))
+
+
+# ============================================================
+# MODULE 7: SKILL VERIFICATION SYSTEM ROUTES
+# ============================================================
+
+@app.route("/skill-verifications")
+def skill_verifications():
+    if not login_required():
+        flash("Please login first.", "danger")
+        return redirect(url_for("login"))
+
+    user = get_logged_user()
+
+    verifications = SkillVerification.query.filter_by(
+        user_id=user.id
+    ).order_by(SkillVerification.created_at.desc()).all()
+
+    verification_stats = get_verification_stats_for_user(user.id)
+
+    return render_template(
+        "skill_verifications.html",
+        user=user,
+        verifications=verifications,
+        verification_stats=verification_stats
+    )
+
+
+@app.route("/skill-verifications/add", methods=["GET", "POST"])
+def add_skill_verification():
+    if not login_required():
+        flash("Please login first.", "danger")
+        return redirect(url_for("login"))
+
+    user = get_logged_user()
+
+    if request.method == "POST":
+        skill_name = request.form.get("skill_name", "").strip()
+        proof_title = request.form.get("proof_title", "").strip()
+        proof_link = request.form.get("proof_link", "").strip()
+        description = request.form.get("description", "").strip()
+
+        if not skill_name or not proof_title:
+            flash("Skill name and proof title are required.", "danger")
+            return redirect(url_for("add_skill_verification"))
+
+        verification = SkillVerification(
+            user_id=user.id,
+            skill_name=skill_name,
+            proof_title=proof_title,
+            proof_link=proof_link,
+            description=description,
+            status="pending"
+        )
+
+        db.session.add(verification)
+        db.session.commit()
+
+        flash("Skill verification submitted successfully.", "success")
+        return redirect(url_for("skill_verifications"))
+
+    return render_template("add_skill_verification.html", user=user)
+
+
+@app.route("/admin/verifications")
+def admin_verifications():
+    if not login_required():
+        flash("Please login first.", "danger")
+        return redirect(url_for("login"))
+
+    if not superadmin_required():
+        flash("Access denied. Superadmin only.", "danger")
+        return redirect(url_for("user_dashboard"))
+
+    status_filter = request.args.get("status", "all")
+
+    query = SkillVerification.query
+
+    if status_filter in ["pending", "approved", "rejected"]:
+        query = query.filter_by(status=status_filter)
+
+    verifications = query.order_by(SkillVerification.created_at.desc()).all()
+    verification_stats = get_platform_verification_stats()
+
+    return render_template(
+        "admin_verifications.html",
+        verifications=verifications,
+        verification_stats=verification_stats,
+        status_filter=status_filter
+    )
+
+
+@app.route("/admin/verifications/<int:verification_id>/approve", methods=["POST"])
+def approve_verification(verification_id):
+    if not login_required() or not superadmin_required():
+        flash("Unauthorized action.", "danger")
+        return redirect(url_for("login"))
+
+    verification = SkillVerification.query.get_or_404(verification_id)
+    admin_note = request.form.get("admin_note", "").strip()
+
+    verification.status = "approved"
+    verification.admin_note = admin_note
+    verification.reviewed_at = datetime.utcnow()
+
+    db.session.commit()
+
+    add_credits(
+        verification.user_id,
+        10,
+        "Credits earned for approved skill verification",
+        "verification_reward"
+    )
+
+    flash("Skill verification approved. User received 10 credits.", "success")
+    return redirect(url_for("admin_verifications"))
+
+
+@app.route("/admin/verifications/<int:verification_id>/reject", methods=["POST"])
+def reject_verification(verification_id):
+    if not login_required() or not superadmin_required():
+        flash("Unauthorized action.", "danger")
+        return redirect(url_for("login"))
+
+    verification = SkillVerification.query.get_or_404(verification_id)
+    admin_note = request.form.get("admin_note", "").strip()
+
+    verification.status = "rejected"
+    verification.admin_note = admin_note
+    verification.reviewed_at = datetime.utcnow()
+
+    db.session.commit()
+
+    flash("Skill verification rejected.", "success")
+    return redirect(url_for("admin_verifications"))
+
+
+# ============================================================
+# MODULE 8: SKILL REQUESTS FEED ROUTES
+# ============================================================
+
+@app.route("/skill-feed")
+def skill_feed():
+    if not login_required():
+        flash("Please login first.", "danger")
+        return redirect(url_for("login"))
+
+    status_filter = request.args.get("status", "open")
+    search = request.args.get("q", "").strip()
+
+    query = SkillRequestPost.query
+
+    if status_filter in ["open", "closed"]:
+        query = query.filter_by(status=status_filter)
+
+    if search:
+        query = query.filter(
+            (
+                SkillRequestPost.title.ilike(f"%{search}%")
+                | SkillRequestPost.skill_needed.ilike(f"%{search}%")
+                | SkillRequestPost.description.ilike(f"%{search}%")
+            )
+        )
+
+    posts = query.order_by(SkillRequestPost.created_at.desc()).all()
+
+    return render_template(
+        "skill_feed.html",
+        posts=posts,
+        status_filter=status_filter,
+        search=search
+    )
+
+
+@app.route("/skill-feed/add", methods=["GET", "POST"])
+def add_skill_feed_post():
+    if not login_required():
+        flash("Please login first.", "danger")
+        return redirect(url_for("login"))
+
+    user = get_logged_user()
+
+    if request.method == "POST":
+        title = request.form.get("title", "").strip()
+        skill_needed = request.form.get("skill_needed", "").strip()
+        description = request.form.get("description", "").strip()
+        preferred_exchange_skill = request.form.get("preferred_exchange_skill", "").strip()
+
+        if not title or not skill_needed or not description:
+            flash("Title, skill needed, and description are required.", "danger")
+            return redirect(url_for("add_skill_feed_post"))
+
+        wallet = get_or_create_wallet(user.id)
+
+        if wallet.balance < 1:
+            flash("You need at least 1 credit to post a skill request.", "danger")
+            return redirect(url_for("my_wallet"))
+
+        post = SkillRequestPost(
+            user_id=user.id,
+            title=title,
+            skill_needed=skill_needed,
+            description=description,
+            preferred_exchange_skill=preferred_exchange_skill,
+            status="open"
+        )
+
+        db.session.add(post)
+        db.session.commit()
+
+        spend_credits(
+            user.id,
+            1,
+            "Credit spent for posting skill request feed",
+            "feed_post_fee"
+        )
+
+        flash("Skill request posted successfully. 1 credit was used.", "success")
+        return redirect(url_for("skill_feed"))
+
+    return render_template("add_skill_feed_post.html", user=user)
+
+
+@app.route("/skill-feed/<int:post_id>", methods=["GET", "POST"])
+def skill_feed_detail(post_id):
+    if not login_required():
+        flash("Please login first.", "danger")
+        return redirect(url_for("login"))
+
+    user = get_logged_user()
+    post = SkillRequestPost.query.get_or_404(post_id)
+
+    if request.method == "POST":
+        if post.user_id == user.id:
+            flash("You cannot respond to your own post.", "danger")
+            return redirect(url_for("skill_feed_detail", post_id=post.id))
+
+        if post.status != "open":
+            flash("This skill request is closed.", "warning")
+            return redirect(url_for("skill_feed_detail", post_id=post.id))
+
+        message = request.form.get("message", "").strip()
+        offered_skill = request.form.get("offered_skill", "").strip()
+
+        if not message:
+            flash("Response message is required.", "danger")
+            return redirect(url_for("skill_feed_detail", post_id=post.id))
+
+        response = SkillRequestResponse(
+            post_id=post.id,
+            responder_id=user.id,
+            message=message,
+            offered_skill=offered_skill,
+            status="pending"
+        )
+
+        db.session.add(response)
+        db.session.commit()
+
+        add_credits(
+            user.id,
+            1,
+            "Credit earned for responding to skill request feed",
+            "feed_response_reward"
+        )
+
+        flash("Response sent successfully. You earned 1 credit.", "success")
+        return redirect(url_for("skill_feed_detail", post_id=post.id))
+
+    responses = SkillRequestResponse.query.filter_by(
+        post_id=post.id
+    ).order_by(SkillRequestResponse.created_at.desc()).all()
+
+    return render_template(
+        "skill_feed_detail.html",
+        user=user,
+        post=post,
+        responses=responses
+    )
+
+
+@app.route("/my-skill-posts")
+def my_skill_posts():
+    if not login_required():
+        flash("Please login first.", "danger")
+        return redirect(url_for("login"))
+
+    user = get_logged_user()
+
+    posts = SkillRequestPost.query.filter_by(
+        user_id=user.id
+    ).order_by(SkillRequestPost.created_at.desc()).all()
+
+    feed_stats = get_skill_feed_stats_for_user(user.id)
+
+    return render_template(
+        "my_skill_posts.html",
+        user=user,
+        posts=posts,
+        feed_stats=feed_stats
+    )
+
+
+@app.route("/skill-feed/<int:post_id>/close", methods=["POST"])
+def close_skill_feed_post(post_id):
+    if not login_required():
+        flash("Please login first.", "danger")
+        return redirect(url_for("login"))
+
+    user = get_logged_user()
+    post = SkillRequestPost.query.get_or_404(post_id)
+
+    if post.user_id != user.id:
+        flash("Only the post owner can close this request.", "danger")
+        return redirect(url_for("skill_feed"))
+
+    post.status = "closed"
+    post.closed_at = datetime.utcnow()
+
+    db.session.commit()
+
+    flash("Skill request post closed successfully.", "success")
+    return redirect(url_for("my_skill_posts"))
+
+
+@app.route("/admin/skill-feed")
+def admin_skill_feed():
+    if not login_required():
+        flash("Please login first.", "danger")
+        return redirect(url_for("login"))
+
+    if not superadmin_required():
+        flash("Access denied. Superadmin only.", "danger")
+        return redirect(url_for("user_dashboard"))
+
+    posts = SkillRequestPost.query.order_by(
+        SkillRequestPost.created_at.desc()
+    ).all()
+
+    feed_stats = get_platform_feed_stats()
+
+    return render_template(
+        "admin_skill_feed.html",
+        posts=posts,
+        feed_stats=feed_stats
+    )
+
+
 with app.app_context():
     db.create_all()
 
@@ -1201,6 +1930,11 @@ with app.app_context():
 
         db.session.add(admin)
         db.session.commit()
+
+    all_users = User.query.all()
+
+    for each_user in all_users:
+        get_or_create_wallet(each_user.id)
 
 
 if __name__ == "__main__":

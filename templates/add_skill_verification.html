@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Add Verification | SkillSwap AI{% endblock %}
+
+{% block content %}
+<section class="easy-page-section">
+  <div class="container">
+    <div class="easy-hero-card mb-4">
+      <div>
+        <div class="section-eyebrow">Skill Verification</div>
+        <h1 class="easy-title">Submit Skill Proof</h1>
+        <p class="section-subtitle mb-0">Add certificate, GitHub, portfolio, LinkedIn, or project proof.</p>
+      </div>
+    </div>
+
+    <div class="easy-panel">
+      <form method="POST">
+        <div class="mb-3">
+          <label class="form-label">Skill Name</label>
+          <input type="text" name="skill_name" class="form-control form-control-lg" placeholder="Example: Python, UI Design, Excel" required>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Proof Title</label>
+          <input type="text" name="proof_title" class="form-control form-control-lg" placeholder="Example: Python Certificate / GitHub Project" required>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Proof Link</label>
+          <input type="url" name="proof_link" class="form-control form-control-lg" placeholder="https://...">
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label">Description</label>
+          <textarea name="description" class="form-control" rows="5" placeholder="Explain what this proof shows..."></textarea>
+        </div>
+
+        <div class="d-flex gap-2 flex-wrap">
+          <button class="premium-btn premium-btn-primary" type="submit">Submit Verification</button>
+          <a href="{{ url_for('skill_verifications') }}" class="premium-btn premium-btn-soft">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}

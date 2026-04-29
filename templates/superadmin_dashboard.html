@@ -10,16 +10,13 @@
         <div class="col-lg-8">
           <div class="section-eyebrow">Superadmin Control Panel</div>
           <h1 class="section-title mb-2">Platform Management</h1>
-          <p class="section-subtitle mb-0">
-            Manage users, review roles, monitor matches, requests, chats, and ratings.
-          </p>
+          <p class="section-subtitle mb-0">Manage users, matches, requests, chats, reviews, credits, verifications, and feed posts.</p>
         </div>
-
         <div class="col-lg-4 text-lg-end">
           <div class="d-flex gap-2 flex-wrap justify-content-lg-end">
-            <a href="{{ url_for('admin_requests') }}" class="premium-btn premium-btn-soft">Requests</a>
-            <a href="{{ url_for('admin_chats') }}" class="premium-btn premium-btn-soft">Chats</a>
-            <a href="{{ url_for('admin_reviews') }}" class="premium-btn premium-btn-primary">Reviews</a>
+            <a href="{{ url_for('admin_credits') }}" class="premium-btn premium-btn-soft">Credits</a>
+            <a href="{{ url_for('admin_verifications') }}" class="premium-btn premium-btn-soft">Verifications</a>
+            <a href="{{ url_for('admin_skill_feed') }}" class="premium-btn premium-btn-primary">Skill Feed</a>
           </div>
         </div>
       </div>
@@ -29,6 +26,24 @@
       <div class="col-md-4"><div class="stat-card"><div class="d-flex justify-content-between align-items-center"><div><div class="stat-number">{{ total_users }}</div><div class="text-muted fw-bold">Total Users</div></div><div class="stat-icon"><i class="bi bi-people"></i></div></div></div></div>
       <div class="col-md-4"><div class="stat-card"><div class="d-flex justify-content-between align-items-center"><div><div class="stat-number">{{ total_normal_users }}</div><div class="text-muted fw-bold">Normal Users</div></div><div class="stat-icon"><i class="bi bi-person"></i></div></div></div></div>
       <div class="col-md-4"><div class="stat-card"><div class="d-flex justify-content-between align-items-center"><div><div class="stat-number">{{ total_superadmins }}</div><div class="text-muted fw-bold">Superadmins</div></div><div class="stat-icon"><i class="bi bi-shield-lock"></i></div></div></div></div>
+    </div>
+
+    <div class="premium-card p-4 mb-4">
+      <div class="section-eyebrow">Modules 6, 7, 8 Analytics</div>
+      <h4 class="fw-black mb-4">Credits, Verification & Skill Feed</h4>
+
+      <div class="row g-4 mb-4">
+        <div class="col-md-3"><div class="easy-stat-card"><div class="stat-number">{{ credit_stats.total_balance if credit_stats else 0 }}</div><div class="text-muted fw-bold">Total Credits</div></div></div>
+        <div class="col-md-3"><div class="easy-stat-card"><div class="stat-number">{{ verification_stats.pending if verification_stats else 0 }}</div><div class="text-muted fw-bold">Pending Proofs</div></div></div>
+        <div class="col-md-3"><div class="easy-stat-card"><div class="stat-number">{{ verification_stats.approved if verification_stats else 0 }}</div><div class="text-muted fw-bold">Approved Proofs</div></div></div>
+        <div class="col-md-3"><div class="easy-stat-card"><div class="stat-number">{{ feed_stats.open_posts if feed_stats else 0 }}</div><div class="text-muted fw-bold">Open Feed Posts</div></div></div>
+      </div>
+
+      <div class="d-flex gap-2 flex-wrap">
+        <a href="{{ url_for('admin_credits') }}" class="premium-btn premium-btn-primary">Credit Monitor</a>
+        <a href="{{ url_for('admin_verifications') }}" class="premium-btn premium-btn-soft">Verification Monitor</a>
+        <a href="{{ url_for('admin_skill_feed') }}" class="premium-btn premium-btn-soft">Skill Feed Monitor</a>
+      </div>
     </div>
 
     <div class="premium-card p-4 mb-4">
@@ -43,72 +58,14 @@
     </div>
 
     <div class="premium-card p-4 mb-4">
-      <div class="section-eyebrow">Module 3 Analytics</div>
-      <h4 class="fw-black mb-4">Skill Exchange Request Overview</h4>
-      <div class="row g-4 mb-4">
-        <div class="col-md"><div class="request-stat-card"><div class="stat-number">{{ request_stats.total_requests if request_stats else 0 }}</div><div class="text-muted fw-bold">Total</div></div></div>
-        <div class="col-md"><div class="request-stat-card"><div class="stat-number">{{ request_stats.pending_requests if request_stats else 0 }}</div><div class="text-muted fw-bold">Pending</div></div></div>
-        <div class="col-md"><div class="request-stat-card"><div class="stat-number">{{ request_stats.accepted_requests if request_stats else 0 }}</div><div class="text-muted fw-bold">Accepted</div></div></div>
-        <div class="col-md"><div class="request-stat-card"><div class="stat-number">{{ request_stats.rejected_requests if request_stats else 0 }}</div><div class="text-muted fw-bold">Rejected</div></div></div>
-        <div class="col-md"><div class="request-stat-card"><div class="stat-number">{{ request_stats.cancelled_requests if request_stats else 0 }}</div><div class="text-muted fw-bold">Cancelled</div></div></div>
-      </div>
-    </div>
-
-    <div class="premium-card p-4 mb-4">
-      <div class="section-eyebrow">Module 4 Analytics</div>
-      <h4 class="fw-black mb-4">Platform Chat Overview</h4>
+      <div class="section-eyebrow">Modules 3, 4, 5 Analytics</div>
+      <h4 class="fw-black mb-4">Requests, Chats & Reviews</h4>
       <div class="row g-4">
+        <div class="col-md-3"><div class="request-stat-card"><div class="stat-number">{{ request_stats.total_requests if request_stats else 0 }}</div><div class="text-muted fw-bold">Requests</div></div></div>
         <div class="col-md-3"><div class="chat-stat-card"><div class="stat-number">{{ chat_stats.total_messages if chat_stats else 0 }}</div><div class="text-muted fw-bold">Messages</div></div></div>
-        <div class="col-md-3"><div class="chat-stat-card"><div class="stat-number">{{ chat_stats.unread_messages if chat_stats else 0 }}</div><div class="text-muted fw-bold">Unread</div></div></div>
-        <div class="col-md-3"><div class="chat-stat-card"><div class="stat-number">{{ chat_stats.active_chats if chat_stats else 0 }}</div><div class="text-muted fw-bold">Active Chats</div></div></div>
-        <div class="col-md-3"><div class="chat-stat-card"><div class="stat-number">{{ chat_stats.active_senders if chat_stats else 0 }}</div><div class="text-muted fw-bold">Active Senders</div></div></div>
+        <div class="col-md-3"><div class="review-stat-card"><div class="stat-number">{{ review_stats.total_reviews if review_stats else 0 }}</div><div class="text-muted fw-bold">Reviews</div></div></div>
+        <div class="col-md-3"><div class="review-stat-card"><div class="stat-number">{{ review_stats.average_rating if review_stats else 0 }}</div><div class="text-muted fw-bold">Avg Rating</div></div></div>
       </div>
-    </div>
-
-    <div class="premium-card p-4 mb-4">
-      <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 align-items-lg-center mb-4">
-        <div>
-          <div class="section-eyebrow">Module 5 Analytics</div>
-          <h4 class="fw-black mb-0">Ratings & Reviews Overview</h4>
-          <p class="text-muted mb-0">Monitor trust and learning quality across the platform.</p>
-        </div>
-        <a href="{{ url_for('admin_reviews') }}" class="premium-btn premium-btn-primary">View Review Monitor</a>
-      </div>
-
-      <div class="row g-4 mb-4">
-        <div class="col-md-3"><div class="review-stat-card"><div class="stat-number">{{ review_stats.total_reviews if review_stats else 0 }}</div><div class="text-muted fw-bold">Total Reviews</div></div></div>
-        <div class="col-md-3"><div class="review-stat-card"><div class="stat-number">{{ review_stats.average_rating if review_stats else 0 }}</div><div class="text-muted fw-bold">Average Rating</div></div></div>
-        <div class="col-md-3"><div class="review-stat-card"><div class="stat-number">{{ review_stats.five_star_reviews if review_stats else 0 }}</div><div class="text-muted fw-bold">5 Star</div></div></div>
-        <div class="col-md-3"><div class="review-stat-card"><div class="stat-number">{{ review_stats.low_reviews if review_stats else 0 }}</div><div class="text-muted fw-bold">Low Reviews</div></div></div>
-      </div>
-
-      <h5 class="fw-black mb-3">Recent Reviews</h5>
-      {% if recent_reviews %}
-        <div class="row g-3">
-          {% for review in recent_reviews %}
-            <div class="col-lg-6">
-              <div class="review-dashboard-row">
-                <div>
-                  <strong>{{ review.reviewer.full_name }}</strong>
-                  <span class="text-muted">→</span>
-                  <strong>{{ review.reviewed_user.full_name }}</strong>
-                  <p class="text-muted mb-0 small">
-                    {{ review.review_text[:80] if review.review_text else 'No written review' }}
-                    {% if review.review_text and review.review_text|length > 80 %}...{% endif %}
-                  </p>
-                </div>
-                <span class="review-rating-badge">{{ review.rating }} ★</span>
-              </div>
-            </div>
-          {% endfor %}
-        </div>
-      {% else %}
-        <div class="review-empty-state py-4">
-          <i class="bi bi-star"></i>
-          <h6 class="fw-black mt-3 mb-1">No reviews yet</h6>
-          <p class="text-muted mb-0 small">Reviews will appear after learners submit feedback.</p>
-        </div>
-      {% endif %}
     </div>
 
     <div class="premium-card p-4">
@@ -118,8 +75,10 @@
           <h4 class="fw-black mb-0">Registered Users</h4>
         </div>
         <div class="d-flex gap-2 flex-wrap">
-          <span class="badge-soft"><i class="bi bi-database me-1"></i> SQLite3</span>
-          <span class="badge-soft"><i class="bi bi-stars me-1"></i> Reviews Ready</span>
+          <span class="badge-soft">SQLite3</span>
+          <span class="badge-soft">Credits Ready</span>
+          <span class="badge-soft">Verification Ready</span>
+          <span class="badge-soft">Feed Ready</span>
         </div>
       </div>
 
@@ -135,38 +94,13 @@
               <th style="min-width:260px;">Update Role</th>
             </tr>
           </thead>
-
           <tbody>
             {% for user in users %}
               <tr>
-                <td>
-                  <div class="d-flex align-items-center gap-2">
-                    <span class="avatar">{{ user.full_name[0] }}</span>
-                    <div>
-                      <div class="fw-black">{{ user.full_name }}</div>
-                      <small class="text-muted">ID #{{ user.id }}</small>
-                    </div>
-                  </div>
-                </td>
+                <td><div class="d-flex align-items-center gap-2"><span class="avatar">{{ user.full_name[0] }}</span><div><div class="fw-black">{{ user.full_name }}</div><small class="text-muted">ID #{{ user.id }}</small></div></div></td>
                 <td>{{ user.email }}</td>
-                <td>
-                  {% if user.skills_offered %}
-                    {% for skill in user.skills_offered.split(",")[:2] %}
-                      <span class="skill-pill">{{ skill.strip() }}</span>
-                    {% endfor %}
-                  {% else %}
-                    <span class="text-muted">Not added</span>
-                  {% endif %}
-                </td>
-                <td>
-                  {% if user.skills_wanted %}
-                    {% for skill in user.skills_wanted.split(",")[:2] %}
-                      <span class="skill-pill">{{ skill.strip() }}</span>
-                    {% endfor %}
-                  {% else %}
-                    <span class="text-muted">Not added</span>
-                  {% endif %}
-                </td>
+                <td>{% if user.skills_offered %}{% for skill in user.skills_offered.split(",")[:2] %}<span class="skill-pill">{{ skill.strip() }}</span>{% endfor %}{% else %}<span class="text-muted">Not added</span>{% endif %}</td>
+                <td>{% if user.skills_wanted %}{% for skill in user.skills_wanted.split(",")[:2] %}<span class="skill-pill">{{ skill.strip() }}</span>{% endfor %}{% else %}<span class="text-muted">Not added</span>{% endif %}</td>
                 <td><span class="badge-soft">{{ user.role }}</span></td>
                 <td>
                   <form method="POST" action="{{ url_for('update_role', user_id=user.id) }}" class="d-flex gap-2">
@@ -191,7 +125,6 @@
         </div>
       {% endif %}
     </div>
-
   </div>
 </section>
 {% endblock %}

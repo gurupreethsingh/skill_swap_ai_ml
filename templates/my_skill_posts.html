@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}My Skill Posts | SkillSwap AI{% endblock %}
+
+{% block content %}
+<section class="easy-page-section">
+  <div class="container">
+    <div class="easy-hero-card mb-4">
+      <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+        <div>
+          <div class="section-eyebrow">My Feed Posts</div>
+          <h1 class="easy-title">My Skill Requests</h1>
+          <p class="section-subtitle mb-0">Manage the learning requests you posted.</p>
+        </div>
+
+        <a href="{{ url_for('add_skill_feed_post') }}" class="premium-btn premium-btn-primary">Post New Request</a>
+      </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+      <div class="col-md-4"><div class="easy-stat-card"><div class="stat-number">{{ feed_stats.posts }}</div><div class="text-muted fw-bold">Posts</div></div></div>
+      <div class="col-md-4"><div class="easy-stat-card"><div class="stat-number">{{ feed_stats.open_posts }}</div><div class="text-muted fw-bold">Open</div></div></div>
+      <div class="col-md-4"><div class="easy-stat-card"><div class="stat-number">{{ feed_stats.responses }}</div><div class="text-muted fw-bold">Responses Sent</div></div></div>
+    </div>
+
+    {% if posts %}
+      <div class="row g-4">
+        {% for post in posts %}
+          <div class="col-lg-6">
+            <div class="easy-card h-100">
+              <div class="d-flex justify-content-between gap-3 mb-3">
+                <div>
+                  <h4 class="fw-black mb-1">{{ post.title }}</h4>
+                  <p class="text-muted mb-0">{{ post.skill_needed }}</p>
+                </div>
+                <span class="easy-status status-{{ post.status }}">{{ post.status }}</span>
+              </div>
+
+              <p class="text-muted">{{ post.description[:160] }}{% if post.description|length > 160 %}...{% endif %}</p>
+
+              <div class="d-flex gap-2 flex-wrap">
+                <a href="{{ url_for('skill_feed_detail', post_id=post.id) }}" class="premium-btn premium-btn-primary py-2">View</a>
+
+                {% if post.status == "open" %}
+                  <form method="POST" action="{{ url_for('close_skill_feed_post', post_id=post.id) }}">
+                    <button class="premium-btn premium-btn-soft py-2" type="submit">Close</button>
+                  </form>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="easy-empty-state">
+        <i class="bi bi-rss"></i>
+        <h5 class="fw-black mt-3">No posts yet</h5>
+        <p class="text-muted mb-0">Create your first skill request post.</p>
+      </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

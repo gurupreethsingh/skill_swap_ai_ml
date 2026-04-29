@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Skill Verifications | SkillSwap AI{% endblock %}
+
+{% block content %}
+<section class="easy-page-section">
+  <div class="container">
+    <div class="easy-hero-card mb-4">
+      <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+        <div>
+          <div class="section-eyebrow">Module 7 Skill Verification</div>
+          <h1 class="easy-title">My Skill Verifications</h1>
+          <p class="section-subtitle mb-0">Submit certificates, portfolio links, or proof to verify your skills.</p>
+        </div>
+
+        <a href="{{ url_for('add_skill_verification') }}" class="premium-btn premium-btn-primary">
+          Add Verification
+        </a>
+      </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+      <div class="col-md-3"><div class="easy-stat-card"><div class="stat-number">{{ verification_stats.total }}</div><div class="text-muted fw-bold">Total</div></div></div>
+      <div class="col-md-3"><div class="easy-stat-card"><div class="stat-number">{{ verification_stats.pending }}</div><div class="text-muted fw-bold">Pending</div></div></div>
+      <div class="col-md-3"><div class="easy-stat-card"><div class="stat-number">{{ verification_stats.approved }}</div><div class="text-muted fw-bold">Approved</div></div></div>
+      <div class="col-md-3"><div class="easy-stat-card"><div class="stat-number">{{ verification_stats.rejected }}</div><div class="text-muted fw-bold">Rejected</div></div></div>
+    </div>
+
+    <div class="easy-panel">
+      <h4 class="fw-black mb-4">Submitted Proofs</h4>
+
+      {% if verifications %}
+        <div class="row g-3">
+          {% for item in verifications %}
+            <div class="col-lg-6">
+              <div class="easy-card">
+                <div class="d-flex justify-content-between gap-3">
+                  <div>
+                    <h5 class="fw-black mb-1">{{ item.skill_name }}</h5>
+                    <p class="text-muted mb-1">{{ item.proof_title }}</p>
+                  </div>
+                  <span class="easy-status status-{{ item.status }}">{{ item.status }}</span>
+                </div>
+
+                {% if item.proof_link %}
+                  <a href="{{ item.proof_link }}" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill mt-3">
+                    Open Proof
+                  </a>
+                {% endif %}
+
+                {% if item.description %}
+                  <p class="text-muted mt-3 mb-0">{{ item.description }}</p>
+                {% endif %}
+
+                {% if item.admin_note %}
+                  <div class="easy-note mt-3">
+                    <strong>Admin Note:</strong> {{ item.admin_note }}
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="easy-empty-state">
+          <i class="bi bi-patch-check"></i>
+          <h5 class="fw-black mt-3">No verification submitted</h5>
+          <p class="text-muted mb-0">Submit proof to increase trust in your profile.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}

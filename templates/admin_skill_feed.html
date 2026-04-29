@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Admin Skill Feed | SkillSwap AI{% endblock %}
+
+{% block content %}
+<section class="easy-page-section">
+  <div class="container">
+    <div class="easy-hero-card mb-4">
+      <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+        <div>
+          <div class="section-eyebrow">Superadmin Skill Feed Monitor</div>
+          <h1 class="easy-title">Skill Requests Feed</h1>
+          <p class="section-subtitle mb-0">Monitor all posted skill requests.</p>
+        </div>
+
+        <a href="{{ url_for('superadmin_dashboard') }}" class="premium-btn premium-btn-soft">Back to Dashboard</a>
+      </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+      <div class="col-md-3"><div class="easy-stat-card"><div class="stat-number">{{ feed_stats.total_posts }}</div><div class="text-muted fw-bold">Total Posts</div></div></div>
+      <div class="col-md-3"><div class="easy-stat-card"><div class="stat-number">{{ feed_stats.open_posts }}</div><div class="text-muted fw-bold">Open</div></div></div>
+      <div class="col-md-3"><div class="easy-stat-card"><div class="stat-number">{{ feed_stats.closed_posts }}</div><div class="text-muted fw-bold">Closed</div></div></div>
+      <div class="col-md-3"><div class="easy-stat-card"><div class="stat-number">{{ feed_stats.responses }}</div><div class="text-muted fw-bold">Responses</div></div></div>
+    </div>
+
+    <div class="easy-panel">
+      <div class="table-responsive">
+        <table class="table align-middle">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Title</th>
+              <th>Skill Needed</th>
+              <th>Status</th>
+              <th>Responses</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for post in posts %}
+              <tr>
+                <td>{{ post.user.full_name }}</td>
+                <td>{{ post.title }}</td>
+                <td>{{ post.skill_needed }}</td>
+                <td><span class="easy-status status-{{ post.status }}">{{ post.status }}</span></td>
+                <td>{{ post.responses|length }}</td>
+                <td>{{ post.created_at.strftime('%d %b %Y') }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      {% if not posts %}
+        <p class="text-muted mb-0">No feed posts yet.</p>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}

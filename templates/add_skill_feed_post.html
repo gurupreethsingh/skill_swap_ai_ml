@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Post Skill Request | SkillSwap AI{% endblock %}
+
+{% block content %}
+<section class="easy-page-section">
+  <div class="container">
+    <div class="easy-hero-card mb-4">
+      <div>
+        <div class="section-eyebrow">Skill Feed</div>
+        <h1 class="easy-title">Post a Skill Request</h1>
+        <p class="section-subtitle mb-0">Posting costs 1 credit and helps others discover your learning need.</p>
+      </div>
+    </div>
+
+    <div class="easy-panel">
+      <form method="POST">
+        <div class="mb-3">
+          <label class="form-label">Title</label>
+          <input type="text" name="title" class="form-control form-control-lg" placeholder="Example: Need help learning React basics" required>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Skill Needed</label>
+          <input type="text" name="skill_needed" class="form-control form-control-lg" placeholder="Example: React, Python, Photoshop" required>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Skill You Can Exchange</label>
+          <input type="text" name="preferred_exchange_skill" class="form-control form-control-lg" placeholder="Example: I can teach Excel">
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label">Description</label>
+          <textarea name="description" class="form-control" rows="6" placeholder="Explain what you want to learn..." required></textarea>
+        </div>
+
+        <div class="d-flex gap-2 flex-wrap">
+          <button class="premium-btn premium-btn-primary" type="submit">Post Request</button>
+          <a href="{{ url_for('skill_feed') }}" class="premium-btn premium-btn-soft">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}

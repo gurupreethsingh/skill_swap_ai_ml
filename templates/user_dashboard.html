@@ -9,7 +9,7 @@
         <div class="col-lg-8">
           <div class="section-eyebrow">User Dashboard</div>
           <h1 class="section-title mb-2">Welcome, {{ user.full_name }}</h1>
-          <p class="section-subtitle mb-0">Your personal learning command center for skills, matches, requests, chats, reviews, and progress.</p>
+          <p class="section-subtitle mb-0">Your personal learning command center for skills, matches, requests, chats, reviews, credits, verifications, and feed posts.</p>
         </div>
         <div class="col-lg-4 text-lg-end">
           <div class="d-inline-flex align-items-center gap-3 premium-card p-3">
@@ -25,8 +25,8 @@
 
     <div class="row g-4 mb-4">
       <div class="col-md-6 col-xl-3"><div class="stat-card"><div class="d-flex justify-content-between align-items-center"><div><div class="stat-number">{{ stats.skills_offered }}</div><div class="text-muted fw-bold">Skills Offered</div></div><div class="stat-icon"><i class="bi bi-mortarboard"></i></div></div></div></div>
-      <div class="col-md-6 col-xl-3"><div class="stat-card"><div class="d-flex justify-content-between align-items-center"><div><div class="stat-number">{{ stats.skills_wanted }}</div><div class="text-muted fw-bold">Skills Wanted</div></div><div class="stat-icon"><i class="bi bi-bullseye"></i></div></div></div></div>
       <div class="col-md-6 col-xl-3"><div class="stat-card"><div class="d-flex justify-content-between align-items-center"><div><div class="stat-number">{{ stats.matches }}</div><div class="text-muted fw-bold">Matches</div></div><div class="stat-icon"><i class="bi bi-cpu"></i></div></div></div></div>
+      <div class="col-md-6 col-xl-3"><div class="stat-card"><div class="d-flex justify-content-between align-items-center"><div><div class="stat-number">{{ credit_stats.balance if credit_stats else 0 }}</div><div class="text-muted fw-bold">Credits</div></div><div class="stat-icon"><i class="bi bi-coin"></i></div></div></div></div>
       <div class="col-md-6 col-xl-3"><div class="stat-card"><div class="d-flex justify-content-between align-items-center"><div><div class="stat-number">{{ review_stats.average_rating if review_stats else 0 }}</div><div class="text-muted fw-bold">Avg Rating</div></div><div class="stat-icon"><i class="bi bi-star"></i></div></div></div></div>
     </div>
 
@@ -39,7 +39,6 @@
         </div>
         <a href="{{ url_for('matches') }}" class="premium-btn premium-btn-primary">View All Matches <i class="bi bi-arrow-right ms-1"></i></a>
       </div>
-
       <div class="row g-3">
         {% if suggested_matches %}
           {% for match in suggested_matches %}
@@ -52,9 +51,7 @@
                     <small class="text-muted">{{ match.score }}% match</small>
                   </div>
                 </div>
-                <div class="match-score-track mb-3">
-                  <div class="match-score-fill" style="width: {{ match.score|default(0)|int }}%;"></div>
-                </div>
+                <div class="match-score-track mb-3"><div class="match-score-fill" style="width: {{ match.score|default(0)|int }}%;"></div></div>
                 <p class="text-muted small mb-3">{{ match.reason }}</p>
                 <div class="d-flex gap-2 flex-wrap">
                   <a href="{{ url_for('matches') }}" class="btn btn-sm btn-outline-primary rounded-pill">See Details</a>
@@ -72,14 +69,75 @@
     <div class="premium-card p-4 mb-4">
       <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
         <div>
+          <div class="section-eyebrow">Modules 6, 7, 8</div>
+          <h4 class="fw-black mb-0">Credits, Verification & Skill Feed</h4>
+          <p class="text-muted mb-0">Use credits, verify skills, and post learning requests.</p>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+          <a href="{{ url_for('my_wallet') }}" class="premium-btn premium-btn-primary">My Wallet</a>
+          <a href="{{ url_for('skill_verifications') }}" class="premium-btn premium-btn-soft">Verifications</a>
+          <a href="{{ url_for('skill_feed') }}" class="premium-btn premium-btn-soft">Skill Feed</a>
+        </div>
+      </div>
+
+      <div class="row g-4 mb-4">
+        <div class="col-md-3"><div class="easy-stat-card"><div class="stat-number">{{ credit_stats.balance if credit_stats else 0 }}</div><div class="text-muted fw-bold">Credits</div></div></div>
+        <div class="col-md-3"><div class="easy-stat-card"><div class="stat-number">{{ verification_stats.approved if verification_stats else 0 }}</div><div class="text-muted fw-bold">Verified Skills</div></div></div>
+        <div class="col-md-3"><div class="easy-stat-card"><div class="stat-number">{{ verification_stats.pending if verification_stats else 0 }}</div><div class="text-muted fw-bold">Pending Proofs</div></div></div>
+        <div class="col-md-3"><div class="easy-stat-card"><div class="stat-number">{{ feed_stats.posts if feed_stats else 0 }}</div><div class="text-muted fw-bold">Feed Posts</div></div></div>
+      </div>
+
+      <div class="row g-4">
+        <div class="col-lg-6">
+          <div class="easy-dashboard-box h-100">
+            <h5 class="fw-black mb-3">Recent Verifications</h5>
+            {% if recent_verifications %}
+              {% for item in recent_verifications %}
+                <div class="mini-request-row">
+                  <div>
+                    <strong>{{ item.skill_name }}</strong>
+                    <p class="text-muted mb-0 small">{{ item.proof_title }}</p>
+                  </div>
+                  <span class="easy-status status-{{ item.status }}">{{ item.status }}</span>
+                </div>
+              {% endfor %}
+            {% else %}
+              <p class="text-muted mb-0">No verification submitted yet.</p>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="col-lg-6">
+          <div class="easy-dashboard-box h-100">
+            <h5 class="fw-black mb-3">Recent Feed Posts</h5>
+            {% if recent_feed_posts %}
+              {% for post in recent_feed_posts %}
+                <div class="mini-request-row">
+                  <div>
+                    <strong>{{ post.title }}</strong>
+                    <p class="text-muted mb-0 small">{{ post.skill_needed }}</p>
+                  </div>
+                  <span class="easy-status status-{{ post.status }}">{{ post.status }}</span>
+                </div>
+              {% endfor %}
+            {% else %}
+              <p class="text-muted mb-0">No skill feed posts yet.</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="premium-card p-4 mb-4">
+      <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
+        <div>
           <div class="section-eyebrow">Module 3 Request System</div>
           <h4 class="fw-black mb-0">Skill Exchange Requests</h4>
           <p class="text-muted mb-0">Track requests you received, requests you sent, and accepted exchanges.</p>
         </div>
-        <a href="{{ url_for('my_requests') }}" class="premium-btn premium-btn-primary">Open Request Center <i class="bi bi-arrow-right ms-1"></i></a>
+        <a href="{{ url_for('my_requests') }}" class="premium-btn premium-btn-primary">Open Request Center</a>
       </div>
-
-      <div class="row g-4 mb-4">
+      <div class="row g-4">
         <div class="col-md-3"><div class="request-stat-card"><div class="stat-number">{{ request_stats.sent_total if request_stats else 0 }}</div><div class="text-muted fw-bold">Sent</div></div></div>
         <div class="col-md-3"><div class="request-stat-card"><div class="stat-number">{{ request_stats.received_total if request_stats else 0 }}</div><div class="text-muted fw-bold">Received</div></div></div>
         <div class="col-md-3"><div class="request-stat-card"><div class="stat-number">{{ request_stats.pending_received if request_stats else 0 }}</div><div class="text-muted fw-bold">Pending</div></div></div>
@@ -94,35 +152,14 @@
           <h4 class="fw-black mb-0">Learning Chats</h4>
           <p class="text-muted mb-0">Chat with users after a skill exchange request has been accepted.</p>
         </div>
-        <a href="{{ url_for('my_chats') }}" class="premium-btn premium-btn-primary">Open My Chats <i class="bi bi-arrow-right ms-1"></i></a>
+        <a href="{{ url_for('my_chats') }}" class="premium-btn premium-btn-primary">Open My Chats</a>
       </div>
-
-      <div class="row g-4 mb-4">
+      <div class="row g-4">
         <div class="col-md-3"><div class="chat-stat-card"><div class="stat-number">{{ chat_stats.accepted_requests if chat_stats else 0 }}</div><div class="text-muted fw-bold">Accepted Requests</div></div></div>
         <div class="col-md-3"><div class="chat-stat-card"><div class="stat-number">{{ chat_stats.active_chats if chat_stats else 0 }}</div><div class="text-muted fw-bold">Active Chats</div></div></div>
         <div class="col-md-3"><div class="chat-stat-card"><div class="stat-number">{{ chat_stats.total_messages if chat_stats else 0 }}</div><div class="text-muted fw-bold">Messages</div></div></div>
         <div class="col-md-3"><div class="chat-stat-card"><div class="stat-number">{{ chat_stats.unread_messages if chat_stats else 0 }}</div><div class="text-muted fw-bold">Unread</div></div></div>
       </div>
-
-      {% if recent_chats %}
-        <div class="row g-3">
-          {% for item in recent_chats %}
-            <div class="col-lg-6">
-              <a href="{{ url_for('chat_room', request_id=item.request.id) }}" class="dashboard-chat-row">
-                <div>
-                  <strong>{{ item.other_user.full_name }}</strong>
-                  <p class="text-muted mb-0 small">{{ item.request.requested_skill }} for {{ item.request.offered_skill }}</p>
-                </div>
-                {% if item.unread_count > 0 %}
-                  <span class="chat-unread-badge">{{ item.unread_count }}</span>
-                {% endif %}
-              </a>
-            </div>
-          {% endfor %}
-        </div>
-      {% else %}
-        <div class="chat-empty-state py-4"><i class="bi bi-chat-dots"></i><h6 class="fw-black mt-3 mb-1">No active chats yet</h6><p class="text-muted mb-0 small">Accept a request or wait for your request to be accepted to open chat.</p></div>
-      {% endif %}
     </div>
 
     <div class="premium-card p-4 mb-4">
@@ -132,40 +169,14 @@
           <h4 class="fw-black mb-0">Ratings & Reviews</h4>
           <p class="text-muted mb-0">Your feedback score and recent reviews from skill exchanges.</p>
         </div>
-        <a href="{{ url_for('my_reviews') }}" class="premium-btn premium-btn-primary">Open My Reviews <i class="bi bi-arrow-right ms-1"></i></a>
+        <a href="{{ url_for('my_reviews') }}" class="premium-btn premium-btn-primary">Open My Reviews</a>
       </div>
-
-      <div class="row g-4 mb-4">
+      <div class="row g-4">
         <div class="col-md-3"><div class="review-stat-card"><div class="stat-number">{{ review_stats.received_total if review_stats else 0 }}</div><div class="text-muted fw-bold">Received</div></div></div>
         <div class="col-md-3"><div class="review-stat-card"><div class="stat-number">{{ review_stats.given_total if review_stats else 0 }}</div><div class="text-muted fw-bold">Given</div></div></div>
         <div class="col-md-3"><div class="review-stat-card"><div class="stat-number">{{ review_stats.average_rating if review_stats else 0 }}</div><div class="text-muted fw-bold">Average</div></div></div>
         <div class="col-md-3"><div class="review-stat-card"><div class="stat-number">{{ review_stats.five_star_count if review_stats else 0 }}</div><div class="text-muted fw-bold">5 Star</div></div></div>
       </div>
-
-      {% if recent_reviews %}
-        <div class="row g-3">
-          {% for review in recent_reviews %}
-            <div class="col-lg-6">
-              <div class="review-dashboard-row">
-                <div>
-                  <strong>{{ review.reviewer.full_name }}</strong>
-                  <p class="text-muted mb-0 small">
-                    {{ review.review_text[:80] if review.review_text else 'No written review' }}
-                    {% if review.review_text and review.review_text|length > 80 %}...{% endif %}
-                  </p>
-                </div>
-                <span class="review-rating-badge">{{ review.rating }} ★</span>
-              </div>
-            </div>
-          {% endfor %}
-        </div>
-      {% else %}
-        <div class="review-empty-state py-4">
-          <i class="bi bi-star"></i>
-          <h6 class="fw-black mt-3 mb-1">No reviews yet</h6>
-          <p class="text-muted mb-0 small">Reviews will appear after completed exchanges.</p>
-        </div>
-      {% endif %}
     </div>
 
     <div class="row g-4">
@@ -175,22 +186,10 @@
             <div><div class="section-eyebrow">Profile Summary</div><h4 class="fw-black mb-0">Learning Profile</h4></div>
             <span class="badge-soft">{{ user.role }}</span>
           </div>
-
           <div class="row g-3">
-            <div class="col-md-6">
-              <div class="profile-mini h-100">
-                <h6 class="fw-black mb-3"><i class="bi bi-lightning-charge-fill text-primary me-1"></i> Skills Offered</h6>
-                {% if user.skills_offered %}{% for skill in user.skills_offered.split(",") %}<span class="skill-pill">{{ skill.strip() }}</span>{% endfor %}{% else %}<p class="text-muted mb-0">No offered skills added yet.</p>{% endif %}
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="profile-mini h-100">
-                <h6 class="fw-black mb-3"><i class="bi bi-stars text-primary me-1"></i> Skills Wanted</h6>
-                {% if user.skills_wanted %}{% for skill in user.skills_wanted.split(",") %}<span class="skill-pill">{{ skill.strip() }}</span>{% endfor %}{% else %}<p class="text-muted mb-0">No wanted skills added yet.</p>{% endif %}
-              </div>
-            </div>
+            <div class="col-md-6"><div class="profile-mini h-100"><h6 class="fw-black mb-3">Skills Offered</h6>{% if user.skills_offered %}{% for skill in user.skills_offered.split(",") %}<span class="skill-pill">{{ skill.strip() }}</span>{% endfor %}{% else %}<p class="text-muted mb-0">No offered skills added yet.</p>{% endif %}</div></div>
+            <div class="col-md-6"><div class="profile-mini h-100"><h6 class="fw-black mb-3">Skills Wanted</h6>{% if user.skills_wanted %}{% for skill in user.skills_wanted.split(",") %}<span class="skill-pill">{{ skill.strip() }}</span>{% endfor %}{% else %}<p class="text-muted mb-0">No wanted skills added yet.</p>{% endif %}</div></div>
           </div>
-
           <hr class="my-4" style="border-color: var(--border-soft);">
           <div class="row g-3">
             <div class="col-md-6"><p class="text-muted mb-1">Email</p><h6 class="fw-bold">{{ user.email }}</h6></div>
@@ -198,17 +197,15 @@
           </div>
         </div>
       </div>
-
       <div class="col-lg-4">
         <div class="premium-card p-4 h-100">
-          <div class="section-eyebrow">AI Readiness</div>
-          <h4 class="fw-black">Profile Strength</h4>
-          <p class="text-muted">Complete skills, requests, chats, and reviews to improve trust.</p>
-          <div class="d-flex justify-content-center my-4"><div class="metric-ring"><div class="metric-ring-inner">92%</div></div></div>
-          <div class="timeline-item"><h6 class="fw-black mb-1">AI Matches Enabled</h6><p class="text-muted mb-0">Module 2 is active.</p></div>
-          <div class="timeline-item"><h6 class="fw-black mb-1">Requests Enabled</h6><p class="text-muted mb-0">Module 3 is active.</p></div>
-          <div class="timeline-item"><h6 class="fw-black mb-1">Chats Enabled</h6><p class="text-muted mb-0">Module 4 is active.</p></div>
-          <div class="timeline-item"><h6 class="fw-black mb-1">Reviews Enabled</h6><p class="text-muted mb-0">Module 5 is active.</p></div>
+          <div class="section-eyebrow">Project Modules</div>
+          <h4 class="fw-black">Current Progress</h4>
+          <p class="text-muted">Your platform now has credits, verification, and skill request feed.</p>
+          <div class="d-flex justify-content-center my-4"><div class="metric-ring"><div class="metric-ring-inner">96%</div></div></div>
+          <div class="timeline-item"><h6 class="fw-black mb-1">Credits Enabled</h6><p class="text-muted mb-0">Module 6 is active.</p></div>
+          <div class="timeline-item"><h6 class="fw-black mb-1">Verification Enabled</h6><p class="text-muted mb-0">Module 7 is active.</p></div>
+          <div class="timeline-item"><h6 class="fw-black mb-1">Skill Feed Enabled</h6><p class="text-muted mb-0">Module 8 is active.</p></div>
         </div>
       </div>
     </div>

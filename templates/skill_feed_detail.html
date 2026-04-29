@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}Skill Request Detail | SkillSwap AI{% endblock %}
+
+{% block content %}
+<section class="easy-page-section">
+  <div class="container">
+    <div class="easy-hero-card mb-4">
+      <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+        <div>
+          <div class="section-eyebrow">Skill Request</div>
+          <h1 class="easy-title">{{ post.title }}</h1>
+          <p class="section-subtitle mb-0">Posted by {{ post.user.full_name }} on {{ post.created_at.strftime('%d %b %Y') }}</p>
+        </div>
+
+        <a href="{{ url_for('skill_feed') }}" class="premium-btn premium-btn-soft">Back to Feed</a>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-lg-7">
+        <div class="easy-panel h-100">
+          <div class="d-flex justify-content-between gap-3 mb-3">
+            <h4 class="fw-black mb-0">{{ post.skill_needed }}</h4>
+            <span class="easy-status status-{{ post.status }}">{{ post.status }}</span>
+          </div>
+
+          <p class="text-muted">{{ post.description }}</p>
+
+          {% if post.preferred_exchange_skill %}
+            <div class="easy-note">
+              <strong>Preferred Exchange:</strong> {{ post.preferred_exchange_skill }}
+            </div>
+          {% endif %}
+
+          {% if post.user_id == user.id and post.status == "open" %}
+            <form method="POST" action="{{ url_for('close_skill_feed_post', post_id=post.id) }}" class="mt-4">
+              <button class="btn btn-outline-danger rounded-pill px-4" type="submit">Close Request</button>
+            </form>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="col-lg-5">
+        <div class="easy-panel h-100">
+          <h4 class="fw-black mb-4">Respond to Request</h4>
+
+          {% if post.user_id != user.id and post.status == "open" %}
+            <form method="POST">
+              <div class="mb-3">
+                <label class="form-label">Your Offered Skill</label>
+                <input type="text" name="offered_skill" class="form-control" placeholder="Example: Python basics">
+              </div>
+
+              <div class="mb-4">
+                <label class="form-label">Message</label>
+                <textarea name="message" class="form-control" rows="5" placeholder="Explain how you can help..." required></textarea>
+              </div>
+
+              <button class="premium-btn premium-btn-primary" type="submit">Send Response</button>
+            </form>
+          {% elif post.user_id == user.id %}
+            <p class="text-muted mb-0">This is your post. Responses from others will appear below.</p>
+          {% else %}
+            <p class="text-muted mb-0">This request is closed.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="easy-panel mt-4">
+      <h4 class="fw-black mb-4">Responses</h4>
+
+      {% if responses %}
+        <div class="row g-3">
+          {% for response in responses %}
+            <div class="col-lg-6">
+              <div class="easy-card">
+                <div class="d-flex justify-content-between gap-3">
+                  <div>
+                    <h5 class="fw-black mb-1">{{ response.responder.full_name }}</h5>
+                    <small class="text-muted">{{ response.created_at.strftime('%d %b %Y, %I:%M %p') }}</small>
+                  </div>
+                  <span class="easy-status status-{{ response.status }}">{{ response.status }}</span>
+                </div>
+
+                {% if response.offered_skill %}
+                  <div class="easy-note mt-3"><strong>Offered Skill:</strong> {{ response.offered_skill }}</div>
+                {% endif %}
+
+                <p class="text-muted mt-3 mb-0">{{ response.message }}</p>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="easy-empty-state">
+          <i class="bi bi-chat-square-text"></i>
+          <h5 class="fw-black mt-3">No responses yet</h5>
+          <p class="text-muted mb-0">Responses will appear here.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Skill Requests Feed | SkillSwap AI{% endblock %}
+
+{% block content %}
+<section class="easy-page-section">
+  <div class="container">
+    <div class="easy-hero-card mb-4">
+      <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+        <div>
+          <div class="section-eyebrow">Module 8 Skill Requests Feed</div>
+          <h1 class="easy-title">Skill Requests Feed</h1>
+          <p class="section-subtitle mb-0">Post what you want to learn and let others respond.</p>
+        </div>
+
+        <div class="d-flex gap-2 flex-wrap">
+          <a href="{{ url_for('add_skill_feed_post') }}" class="premium-btn premium-btn-primary">Post Request</a>
+          <a href="{{ url_for('my_skill_posts') }}" class="premium-btn premium-btn-soft">My Posts</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="easy-panel mb-4">
+      <form method="GET" class="row g-2">
+        <div class="col-lg-7">
+          <input type="text" name="q" value="{{ search }}" class="form-control form-control-lg" placeholder="Search by skill or title...">
+        </div>
+
+        <div class="col-lg-3">
+          <select name="status" class="form-select form-select-lg">
+            <option value="open" {% if status_filter == 'open' %}selected{% endif %}>Open</option>
+            <option value="closed" {% if status_filter == 'closed' %}selected{% endif %}>Closed</option>
+            <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All</option>
+          </select>
+        </div>
+
+        <div class="col-lg-2">
+          <button class="premium-btn premium-btn-primary w-100" type="submit">Search</button>
+        </div>
+      </form>
+    </div>
+
+    {% if posts %}
+      <div class="row g-4">
+        {% for post in posts %}
+          <div class="col-lg-6">
+            <div class="easy-card h-100">
+              <div class="d-flex justify-content-between gap-3 mb-3">
+                <div>
+                  <h4 class="fw-black mb-1">{{ post.title }}</h4>
+                  <p class="text-muted mb-0">By {{ post.user.full_name }} | {{ post.created_at.strftime('%d %b %Y') }}</p>
+                </div>
+                <span class="easy-status status-{{ post.status }}">{{ post.status }}</span>
+              </div>
+
+              <div class="request-skill-line mb-3">
+                <span>Needs: <strong>{{ post.skill_needed }}</strong></span>
+                {% if post.preferred_exchange_skill %}
+                  <span>Can exchange: <strong>{{ post.preferred_exchange_skill }}</strong></span>
+                {% endif %}
+              </div>
+
+              <p class="text-muted">{{ post.description[:180] }}{% if post.description|length > 180 %}...{% endif %}</p>
+
+              <div class="d-flex gap-2 flex-wrap">
+                <a href="{{ url_for('skill_feed_detail', post_id=post.id) }}" class="premium-btn premium-btn-primary py-2">View Details</a>
+                <span class="premium-btn premium-btn-soft py-2">{{ post.responses|length }} Responses</span>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="easy-empty-state">
+        <i class="bi bi-rss"></i>
+        <h5 class="fw-black mt-3">No skill requests found</h5>
+        <p class="text-muted mb-0">Create the first request in the feed.</p>
+      </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

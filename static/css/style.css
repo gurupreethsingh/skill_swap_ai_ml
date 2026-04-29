@@ -733,3 +733,140 @@ a {
     align-items: flex-start;
   }
 }
+
+
+/* ============================================================
+   MODULES 6, 7, 8 EASY BUNDLE UI
+   Add this in base.html:
+   <link rel="stylesheet" href="{{ url_for('static', filename='css/modules_6_7_8_easy.css') }}">
+============================================================ */
+
+.easy-page-section {
+  padding: 3rem 0 5rem;
+}
+
+.easy-hero-card,
+.easy-panel,
+.easy-stat-card,
+.easy-dashboard-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(22px);
+}
+
+.easy-hero-card {
+  border-radius: 34px;
+  padding: clamp(1.5rem, 4vw, 3rem);
+  background:
+    radial-gradient(circle at 12% 18%, rgba(99, 102, 241, 0.18), transparent 28%),
+    radial-gradient(circle at 90% 20%, rgba(16, 185, 129, 0.14), transparent 28%),
+    var(--bg-card);
+}
+
+.easy-title {
+  font-size: clamp(2rem, 4.6vw, 4.3rem);
+  line-height: 0.98;
+  letter-spacing: -0.065em;
+  font-weight: 950;
+  margin-bottom: 1rem;
+}
+
+.easy-panel,
+.easy-dashboard-box {
+  border-radius: 30px;
+  padding: 1.5rem;
+}
+
+.easy-stat-card {
+  border-radius: 28px;
+  padding: 1.25rem;
+  text-align: center;
+}
+
+.easy-card {
+  border-radius: 24px;
+  padding: 1.15rem;
+  background: var(--bg-card-solid);
+  border: 1px solid var(--border-soft);
+  transition: 0.22s ease;
+}
+
+.easy-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-soft);
+}
+
+.easy-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.42rem 0.75rem;
+  border-radius: 999px;
+  font-weight: 900;
+  text-transform: capitalize;
+  font-size: 0.75rem;
+}
+
+.status-pending,
+.status-open {
+  background: rgba(245, 158, 11, 0.14);
+  color: #f59e0b;
+}
+
+.status-approved,
+.status-accepted {
+  background: rgba(16, 185, 129, 0.14);
+  color: #10b981;
+}
+
+.status-rejected,
+.status-closed {
+  background: rgba(239, 68, 68, 0.14);
+  color: #ef4444;
+}
+
+.easy-note {
+  padding: 0.85rem;
+  border-radius: 18px;
+  background: rgba(99, 102, 241, 0.08);
+  color: var(--text-main);
+}
+
+.easy-empty-state {
+  border-radius: 26px;
+  padding: 3rem 1.5rem;
+  text-align: center;
+  background: var(--bg-card-solid);
+  border: 1px dashed var(--border-soft);
+}
+
+.easy-empty-state i {
+  font-size: 2.4rem;
+  color: var(--primary);
+}
+
+.credit-pill {
+  display: inline-flex;
+  min-width: 58px;
+  justify-content: center;
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  font-weight: 950;
+}
+
+.credit-plus {
+  background: rgba(16, 185, 129, 0.14);
+  color: #10b981;
+}
+
+.credit-minus {
+  background: rgba(239, 68, 68, 0.14);
+  color: #ef4444;
+}
+
+@media (max-width: 767px) {
+  .easy-page-section {
+    padding: 2rem 0 3rem;
+  }
+}

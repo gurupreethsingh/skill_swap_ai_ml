@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}Admin Credits | SkillSwap AI{% endblock %}
+
+{% block content %}
+<section class="easy-page-section">
+  <div class="container">
+    <div class="easy-hero-card mb-4">
+      <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+        <div>
+          <div class="section-eyebrow">Superadmin Credit Monitor</div>
+          <h1 class="easy-title">Platform Credits</h1>
+          <p class="section-subtitle mb-0">Monitor credit balance and transactions.</p>
+        </div>
+
+        <a href="{{ url_for('superadmin_dashboard') }}" class="premium-btn premium-btn-soft">Back to Dashboard</a>
+      </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+      <div class="col-md-3"><div class="easy-stat-card"><div class="stat-number">{{ credit_stats.total_balance }}</div><div class="text-muted fw-bold">Total Balance</div></div></div>
+      <div class="col-md-3"><div class="easy-stat-card"><div class="stat-number">{{ credit_stats.total_earned }}</div><div class="text-muted fw-bold">Total Earned</div></div></div>
+      <div class="col-md-3"><div class="easy-stat-card"><div class="stat-number">{{ credit_stats.total_spent }}</div><div class="text-muted fw-bold">Total Spent</div></div></div>
+      <div class="col-md-3"><div class="easy-stat-card"><div class="stat-number">{{ credit_stats.transaction_count }}</div><div class="text-muted fw-bold">Transactions</div></div></div>
+    </div>
+
+    <div class="easy-panel mb-4">
+      <h4 class="fw-black mb-4">User Wallets</h4>
+
+      <div class="table-responsive">
+        <table class="table align-middle">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Balance</th>
+              <th>Earned</th>
+              <th>Spent</th>
+              <th>Add Credits</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for wallet in wallets %}
+              <tr>
+                <td>{{ wallet.user.full_name }}</td>
+                <td>{{ wallet.balance }}</td>
+                <td>{{ wallet.total_earned }}</td>
+                <td>{{ wallet.total_spent }}</td>
+                <td>
+                  <form method="POST" action="{{ url_for('admin_add_credits', user_id=wallet.user_id) }}" class="d-flex gap-2">
+                    <input type="number" name="amount" class="form-control" placeholder="Amount" min="1" required>
+                    <input type="text" name="reason" class="form-control" placeholder="Reason">
+                    <button class="btn btn-primary rounded-pill px-3" type="submit">Add</button>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="easy-panel">
+      <h4 class="fw-black mb-4">Recent Transactions</h4>
+
+      <div class="table-responsive">
+        <table class="table align-middle">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Amount</th>
+              <th>Type</th>
+              <th>Reason</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for tx in transactions %}
+              <tr>
+                <td>{{ tx.user.full_name }}</td>
+                <td>{{ tx.amount }}</td>
+                <td>{{ tx.transaction_type.replace("_", " ").title() }}</td>
+                <td>{{ tx.reason }}</td>
+                <td>{{ tx.created_at.strftime('%d %b %Y') }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      {% if not transactions %}
+        <p class="text-muted mb-0">No transactions yet.</p>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}

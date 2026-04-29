@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}My Wallet | SkillSwap AI{% endblock %}
+
+{% block content %}
+<section class="easy-page-section">
+  <div class="container">
+    <div class="easy-hero-card mb-4">
+      <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+        <div>
+          <div class="section-eyebrow">Module 6 Credit System</div>
+          <h1 class="easy-title">My Credit Wallet</h1>
+          <p class="section-subtitle mb-0">
+            Credits are used to post requests and send skill exchange requests.
+          </p>
+        </div>
+
+        <a href="{{ url_for('skill_feed') }}" class="premium-btn premium-btn-primary">
+          Skill Feed
+        </a>
+      </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+      <div class="col-md-3"><div class="easy-stat-card"><div class="stat-number">{{ credit_stats.balance }}</div><div class="text-muted fw-bold">Balance</div></div></div>
+      <div class="col-md-3"><div class="easy-stat-card"><div class="stat-number">{{ credit_stats.total_earned }}</div><div class="text-muted fw-bold">Earned</div></div></div>
+      <div class="col-md-3"><div class="easy-stat-card"><div class="stat-number">{{ credit_stats.total_spent }}</div><div class="text-muted fw-bold">Spent</div></div></div>
+      <div class="col-md-3"><div class="easy-stat-card"><div class="stat-number">{{ credit_stats.transaction_count }}</div><div class="text-muted fw-bold">Transactions</div></div></div>
+    </div>
+
+    <div class="easy-panel">
+      <h4 class="fw-black mb-4">Credit Transactions</h4>
+
+      {% if transactions %}
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead>
+              <tr>
+                <th>Amount</th>
+                <th>Type</th>
+                <th>Reason</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for tx in transactions %}
+                <tr>
+                  <td>
+                    <span class="credit-pill {% if tx.amount >= 0 %}credit-plus{% else %}credit-minus{% endif %}">
+                      {{ tx.amount }}
+                    </span>
+                  </td>
+                  <td>{{ tx.transaction_type.replace("_", " ").title() }}</td>
+                  <td>{{ tx.reason }}</td>
+                  <td>{{ tx.created_at.strftime('%d %b %Y, %I:%M %p') }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="easy-empty-state">
+          <i class="bi bi-wallet2"></i>
+          <h5 class="fw-black mt-3">No transactions yet</h5>
+          <p class="text-muted mb-0">Your credit history will appear here.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}
