@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block title %}My Reviews | SkillSwap AI{% endblock %}
+
+{% block content %}
+<section class="review-page-section">
+  <div class="container">
+
+    <div class="review-hero-card mb-4">
+      <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+        <div>
+          <div class="section-eyebrow">Review Center</div>
+          <h1 class="review-title">My Ratings & Reviews</h1>
+          <p class="section-subtitle mb-0">
+            View reviews you received and reviews you gave to other learners.
+          </p>
+        </div>
+
+        <a href="{{ url_for('my_requests') }}" class="premium-btn premium-btn-soft">
+          Back to Requests
+        </a>
+      </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+      <div class="col-md-3">
+        <div class="review-stat-card">
+          <div class="stat-number">{{ review_stats.received_total }}</div>
+          <div class="text-muted fw-bold">Received</div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="review-stat-card">
+          <div class="stat-number">{{ review_stats.given_total }}</div>
+          <div class="text-muted fw-bold">Given</div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="review-stat-card">
+          <div class="stat-number">{{ review_stats.average_rating }}</div>
+          <div class="text-muted fw-bold">Average</div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="review-stat-card">
+          <div class="stat-number">{{ review_stats.five_star_count }}</div>
+          <div class="text-muted fw-bold">5 Star</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-lg-6">
+        <div class="review-panel h-100">
+          <h4 class="fw-black mb-4">Reviews I Received</h4>
+
+          {% if received_reviews %}
+            {% for review in received_reviews %}
+              <div class="review-card">
+                <div class="d-flex justify-content-between gap-3 align-items-start">
+                  <div>
+                    <h6 class="fw-black mb-1">{{ review.reviewer.full_name }}</h6>
+                    <small class="text-muted">{{ review.created_at.strftime('%d %b %Y, %I:%M %p') }}</small>
+                  </div>
+
+                  <span class="review-rating-badge">{{ review.rating }} ★</span>
+                </div>
+
+                <p class="text-muted mt-3 mb-2">
+                  {{ review.exchange_request.requested_skill }} for {{ review.exchange_request.offered_skill }}
+                </p>
+
+                {% if review.review_text %}
+                  <p class="mb-0">{{ review.review_text }}</p>
+                {% else %}
+                  <p class="text-muted mb-0">No written review.</p>
+                {% endif %}
+              </div>
+            {% endfor %}
+          {% else %}
+            <div class="review-empty-state">
+              <i class="bi bi-star"></i>
+              <h5 class="fw-black mt-3">No received reviews yet</h5>
+              <p class="text-muted mb-0">Reviews from other learners will appear here.</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="col-lg-6">
+        <div class="review-panel h-100">
+          <h4 class="fw-black mb-4">Reviews I Gave</h4>
+
+          {% if given_reviews %}
+            {% for review in given_reviews %}
+              <div class="review-card">
+                <div class="d-flex justify-content-between gap-3 align-items-start">
+                  <div>
+                    <h6 class="fw-black mb-1">{{ review.reviewed_user.full_name }}</h6>
+                    <small class="text-muted">{{ review.created_at.strftime('%d %b %Y, %I:%M %p') }}</small>
+                  </div>
+
+                  <span class="review-rating-badge">{{ review.rating }} ★</span>
+                </div>
+
+                <p class="text-muted mt-3 mb-2">
+                  {{ review.exchange_request.requested_skill }} for {{ review.exchange_request.offered_skill }}
+                </p>
+
+                {% if review.review_text %}
+                  <p class="mb-0">{{ review.review_text }}</p>
+                {% else %}
+                  <p class="text-muted mb-0">No written review.</p>
+                {% endif %}
+              </div>
+            {% endfor %}
+          {% else %}
+            <div class="review-empty-state">
+              <i class="bi bi-pencil-square"></i>
+              <h5 class="fw-black mt-3">No given reviews yet</h5>
+              <p class="text-muted mb-0">Submit reviews after accepted exchanges.</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% block title %}AI Matches | SkillSwap AI{% endblock %}
+{% block content %}
+<section class="match-hero-section">
+  <div class="container">
+    <div class="match-hero-card">
+      <div class="row align-items-center g-4">
+        <div class="col-lg-8">
+          <div class="section-eyebrow">AI/ML Matchmaking</div>
+          <h1 class="match-hero-title">Your best peer learning matches</h1>
+          <p class="match-hero-subtitle">
+            These suggestions are calculated by comparing your wanted skills with other users' offered skills,
+            and your offered skills with their wanted skills.
+          </p>
+        </div>
+
+        <div class="col-lg-4">
+          <div class="match-profile-card">
+            <div class="d-flex align-items-center gap-3">
+              <span class="avatar">{{ user.full_name[0] }}</span>
+              <div>
+                <h5 class="fw-black mb-0">{{ user.full_name }}</h5>
+                <small class="text-muted">{{ user.email }}</small>
+              </div>
+            </div>
+
+            <hr>
+
+            <p class="text-muted mb-2">You offer</p>
+            {% if user.skills_offered %}
+              {% for skill in user.skills_offered.split(",") %}
+                <span class="skill-pill">{{ skill.strip() }}</span>
+              {% endfor %}
+            {% else %}
+              <span class="text-muted">No offered skills added.</span>
+            {% endif %}
+
+            <p class="text-muted mb-2 mt-3">You want</p>
+            {% if user.skills_wanted %}
+              {% for skill in user.skills_wanted.split(",") %}
+                <span class="skill-pill">{{ skill.strip() }}</span>
+              {% endfor %}
+            {% else %}
+              <span class="text-muted">No wanted skills added.</span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-4 mt-4">
+      {% if suggested_matches %}
+        {% for match in suggested_matches %}
+          <div class="col-lg-6">
+            <div class="ai-match-card h-100">
+              <div class="d-flex justify-content-between align-items-start gap-3 mb-4">
+                <div class="d-flex align-items-center gap-3">
+                  <span class="avatar">{{ match.user.full_name[0] }}</span>
+                  <div>
+                    <h4 class="fw-black mb-1">{{ match.user.full_name }}</h4>
+                    <p class="text-muted mb-0">{{ match.user.email }}</p>
+                  </div>
+                </div>
+
+                <div class="match-score-badge">{{ match.score }}%</div>
+              </div>
+
+              <div class="match-score-track mb-4">
+                <div class="match-score-fill" style="width: {{ match.score|default(0)|int }}%;"></div>
+              </div>
+
+              <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                  <div class="match-mini-box">
+                    <p class="text-muted mb-1">Learning Score</p>
+                    <h3 class="fw-black mb-0">{{ match.learning_score }}%</h3>
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <div class="match-mini-box">
+                    <p class="text-muted mb-1">Teaching Score</p>
+                    <h3 class="fw-black mb-0">{{ match.teaching_score }}%</h3>
+                  </div>
+                </div>
+              </div>
+
+              <div class="match-reason-box mb-4">
+                <i class="bi bi-stars me-2"></i>
+                {{ match.reason }}
+              </div>
+
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <p class="text-muted fw-bold mb-2">They Offer</p>
+                  {% if match.user.skills_offered %}
+                    {% for skill in match.user.skills_offered.split(",") %}
+                      <span class="skill-pill">{{ skill.strip() }}</span>
+                    {% endfor %}
+                  {% else %}
+                    <span class="text-muted">No skills added.</span>
+                  {% endif %}
+                </div>
+
+                <div class="col-md-6">
+                  <p class="text-muted fw-bold mb-2">They Want</p>
+                  {% if match.user.skills_wanted %}
+                    {% for skill in match.user.skills_wanted.split(",") %}
+                      <span class="skill-pill">{{ skill.strip() }}</span>
+                    {% endfor %}
+                  {% else %}
+                    <span class="text-muted">No skills added.</span>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="d-flex gap-2 mt-4 flex-wrap">
+                <a href="{{ url_for('send_request', receiver_id=match.user.id) }}"
+                   class="premium-btn premium-btn-primary">
+                  <i class="bi bi-send me-1"></i> Send Request
+                </a>
+
+                <a href="{{ url_for('my_requests') }}"
+                   class="premium-btn premium-btn-soft">
+                  <i class="bi bi-inbox me-1"></i> My Requests
+                </a>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <div class="col-12">
+          <div class="ai-empty-state">
+            <div class="stat-icon mx-auto mb-3">
+              <i class="bi bi-search"></i>
+            </div>
+            <h3 class="fw-black">No matches found yet</h3>
+            <p class="text-muted mb-0">
+              Add more skills in your profile or create more users with different offered/wanted skills.
+            </p>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <title>{% block title %}SkillSwap AI{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+</head>
+
+<body>
+<div class="app-shell">
+
+  <nav class="navbar navbar-expand-lg modern-navbar sticky-top py-3">
+    <div class="container">
+      <a href="{{ url_for('home') }}" class="navbar-brand d-flex align-items-center gap-2">
+        <span class="brand-logo">S</span>
+        <span>
+          <span class="brand-title d-block lh-1">SkillSwap</span>
+          <small class="text-muted fw-bold">AI Peer Learning</small>
+        </span>
+      </a>
+
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="mainNav">
+        <ul class="navbar-nav mx-auto gap-lg-1">
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('home') }}">Home</a></li>
+
+          {% if session.get("user_id") %}
+            {% if session.get("role") == "superadmin" %}
+              <li class="nav-item"><a class="nav-link" href="{{ url_for('superadmin_dashboard') }}">Superadmin</a></li>
+            {% else %}
+              <li class="nav-item"><a class="nav-link" href="{{ url_for('user_dashboard') }}">Dashboard</a></li>
+            {% endif %}
+          {% endif %}
+
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('home') }}#features">Features</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('home') }}#how-it-works">How It Works</a></li>
+        </ul>
+
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+          <button class="theme-toggle" type="button" onclick="toggleSkillSwapTheme()" title="Toggle theme">
+            <i data-theme-icon class="bi bi-moon-stars-fill"></i>
+          </button>
+
+          {% if session.get("user_id") %}
+            <div class="d-none d-lg-flex align-items-center gap-2 px-2">
+              <span class="avatar">{{ session.get("full_name", "U")[0] }}</span>
+              <div>
+                <div class="fw-bold small">{{ session.get("full_name", "User") }}</div>
+                <div class="text-muted small">{{ session.get("role", "user") }}</div>
+              </div>
+            </div>
+            <a href="{{ url_for('logout') }}" class="premium-btn premium-btn-soft">
+              <i class="bi bi-box-arrow-right me-1"></i> Logout
+            </a>
+          {% else %}
+            <a href="{{ url_for('login') }}" class="premium-btn premium-btn-soft">Login</a>
+            <a href="{{ url_for('register') }}" class="premium-btn premium-btn-primary">Join Free</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="main-content">
+    <div class="container mt-4">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }} shadow-sm">
+              <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-info-circle-fill"></i>
+                <span>{{ message }}</span>
+              </div>
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+    </div>
+
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer py-5">
+    <div class="container">
+      <div class="row g-4">
+        <div class="col-lg-5">
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <span class="brand-logo">S</span>
+            <div>
+              <h5 class="fw-black mb-0 brand-title">SkillSwap AI</h5>
+              <small class="text-muted fw-bold">Learn more. Spend less.</small>
+            </div>
+          </div>
+          <p class="text-muted mb-4" style="max-width: 430px;">
+            A peer learning platform where users exchange skills instead of money, powered by profile intelligence and matching logic.
+          </p>
+          <div class="d-flex gap-2">
+            <span class="theme-toggle"><i class="bi bi-twitter-x"></i></span>
+            <span class="theme-toggle"><i class="bi bi-github"></i></span>
+            <span class="theme-toggle"><i class="bi bi-linkedin"></i></span>
+          </div>
+        </div>
+
+        <div class="col-6 col-lg-2">
+          <h6 class="fw-bold mb-3">Platform</h6>
+          <a class="footer-link" href="{{ url_for('home') }}">Home</a>
+          <a class="footer-link" href="{{ url_for('home') }}#features">Features</a>
+          <a class="footer-link" href="{{ url_for('home') }}#how-it-works">How It Works</a>
+        </div>
+
+        <div class="col-6 col-lg-2">
+          <h6 class="fw-bold mb-3">Account</h6>
+          <a class="footer-link" href="{{ url_for('login') }}">Login</a>
+          <a class="footer-link" href="{{ url_for('register') }}">Register</a>
+          <a class="footer-link" href="{{ url_for('forgot_password') }}">Forgot Password</a>
+        </div>
+
+        <div class="col-lg-3">
+          <h6 class="fw-bold mb-3">Project Stack</h6>
+          <div class="d-flex flex-wrap gap-2">
+            <span class="skill-pill">Flask</span>
+            <span class="skill-pill">SQLite3</span>
+            <span class="skill-pill">AI/ML</span>
+            <span class="skill-pill">Bootstrap</span>
+          </div>
+        </div>
+      </div>
+
+      <hr class="my-4" style="border-color: var(--border-soft);">
+      <div class="d-flex flex-column flex-md-row justify-content-between gap-2 text-muted small">
+        <span>© 2026 SkillSwap AI. All rights reserved.</span>
+        <span>Built for peer learning, skill exchange, and intelligent matching.</span>
+      </div>
+    </div>
+  </footer>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

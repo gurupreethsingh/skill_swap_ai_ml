@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% block title %}My Requests | SkillSwap AI{% endblock %}
+{% block content %}
+<section class="request-page-section">
+  <div class="container">
+    <div class="request-hero-card mb-4">
+      <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 align-items-lg-center">
+        <div>
+          <div class="section-eyebrow">Request Center</div>
+          <h1 class="request-title">My Skill Exchange Requests</h1>
+          <p class="section-subtitle mb-0">Manage requests you received and track requests you sent.</p>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+          <a href="{{ url_for('matches') }}" class="premium-btn premium-btn-primary">Find More Matches</a>
+          <a href="{{ url_for('my_chats') }}" class="premium-btn premium-btn-soft">
+            <i class="bi bi-chat-dots me-1"></i> My Chats
+          </a>
+          <a href="{{ url_for('my_reviews') }}" class="premium-btn premium-btn-soft">
+            <i class="bi bi-star me-1"></i> My Reviews
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+      <div class="col-md-3"><div class="request-stat-card"><div class="stat-number">{{ request_stats.sent_total }}</div><div class="text-muted fw-bold">Sent</div></div></div>
+      <div class="col-md-3"><div class="request-stat-card"><div class="stat-number">{{ request_stats.received_total }}</div><div class="text-muted fw-bold">Received</div></div></div>
+      <div class="col-md-3"><div class="request-stat-card"><div class="stat-number">{{ request_stats.pending_received }}</div><div class="text-muted fw-bold">Pending</div></div></div>
+      <div class="col-md-3"><div class="request-stat-card"><div class="stat-number">{{ request_stats.accepted_total }}</div><div class="text-muted fw-bold">Accepted</div></div></div>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-lg-6">
+        <div class="request-panel h-100">
+          <h4 class="fw-black mb-4">Received Requests</h4>
+          {% if received_requests %}
+            {% for req in received_requests %}
+              <div class="request-card">
+                <div class="d-flex justify-content-between gap-3 align-items-start">
+                  <div class="d-flex align-items-center gap-3">
+                    <span class="avatar">{{ req.sender.full_name[0] }}</span>
+                    <div>
+                      <h6 class="fw-black mb-0">{{ req.sender.full_name }}</h6>
+                      <small class="text-muted">{{ req.created_at.strftime('%d %b %Y, %I:%M %p') }}</small>
+                    </div>
+                  </div>
+                  <span class="request-status status-{{ req.status }}">{{ req.status }}</span>
+                </div>
+
+                <div class="request-skill-line mt-3">
+                  <span>Wants: <strong>{{ req.requested_skill }}</strong></span>
+                  <span>Offers: <strong>{{ req.offered_skill }}</strong></span>
+                </div>
+
+                {% if req.message %}<p class="text-muted mt-3 mb-0">{{ req.message }}</p>{% endif %}
+
+                {% if req.status == "pending" %}
+                  <div class="d-flex gap-2 mt-3">
+                    <form method="POST" action="{{ url_for('accept_request', request_id=req.id) }}">
+                      <button class="btn btn-success rounded-pill px-4" type="submit">Accept</button>
+                    </form>
+                    <form method="POST" action="{{ url_for('reject_request', request_id=req.id) }}">
+                      <button class="btn btn-outline-danger rounded-pill px-4" type="submit">Reject</button>
+                    </form>
+                  </div>
+                {% elif req.status == "accepted" %}
+                  <div class="d-flex gap-2 flex-wrap mt-3">
+                    <a href="{{ url_for('chat_room', request_id=req.id) }}" class="btn btn-primary rounded-pill px-4">
+                      <i class="bi bi-chat-dots me-1"></i> Open Chat
+                    </a>
+
+                    {% if not has_user_reviewed_request(req.id, user.id) %}
+                      <a href="{{ url_for('add_review', request_id=req.id) }}" class="btn btn-outline-warning rounded-pill px-4">
+                        <i class="bi bi-star me-1"></i> Add Review
+                      </a>
+                    {% else %}
+                      <span class="btn btn-outline-success rounded-pill px-4 disabled">Reviewed</span>
+                    {% endif %}
+                  </div>
+                {% endif %}
+              </div>
+            {% endfor %}
+          {% else %}
+            <div class="request-empty-state"><h5 class="fw-black mt-3">No received requests</h5><p class="text-muted mb-0">Requests from other learners will appear here.</p></div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="col-lg-6">
+        <div class="request-panel h-100">
+          <h4 class="fw-black mb-4">Sent Requests</h4>
+          {% if sent_requests %}
+            {% for req in sent_requests %}
+              <div class="request-card">
+                <div class="d-flex justify-content-between gap-3 align-items-start">
+                  <div class="d-flex align-items-center gap-3">
+                    <span class="avatar">{{ req.receiver.full_name[0] }}</span>
+                    <div>
+                      <h6 class="fw-black mb-0">{{ req.receiver.full_name }}</h6>
+                      <small class="text-muted">{{ req.created_at.strftime('%d %b %Y, %I:%M %p') }}</small>
+                    </div>
+                  </div>
+                  <span class="request-status status-{{ req.status }}">{{ req.status }}</span>
+                </div>
+
+                <div class="request-skill-line mt-3">
+                  <span>You want: <strong>{{ req.requested_skill }}</strong></span>
+                  <span>You offer: <strong>{{ req.offered_skill }}</strong></span>
+                </div>
+
+                {% if req.message %}<p class="text-muted mt-3 mb-0">{{ req.message }}</p>{% endif %}
+
+                {% if req.status == "pending" %}
+                  <form method="POST" action="{{ url_for('cancel_request', request_id=req.id) }}" class="mt-3">
+                    <button class="btn btn-outline-danger rounded-pill px-4" type="submit">Cancel</button>
+                  </form>
+                {% elif req.status == "accepted" %}
+                  <div class="d-flex gap-2 flex-wrap mt-3">
+                    <a href="{{ url_for('chat_room', request_id=req.id) }}" class="btn btn-primary rounded-pill px-4">
+                      <i class="bi bi-chat-dots me-1"></i> Open Chat
+                    </a>
+
+                    {% if not has_user_reviewed_request(req.id, user.id) %}
+                      <a href="{{ url_for('add_review', request_id=req.id) }}" class="btn btn-outline-warning rounded-pill px-4">
+                        <i class="bi bi-star me-1"></i> Add Review
+                      </a>
+                    {% else %}
+                      <span class="btn btn-outline-success rounded-pill px-4 disabled">Reviewed</span>
+                    {% endif %}
+                  </div>
+                {% endif %}
+              </div>
+            {% endfor %}
+          {% else %}
+            <div class="request-empty-state"><h5 class="fw-black mt-3">No sent requests</h5><p class="text-muted mb-0">Start from AI matches and send a request.</p></div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

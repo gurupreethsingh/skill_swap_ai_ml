@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}Admin Reviews | SkillSwap AI{% endblock %}
+
+{% block content %}
+<section class="review-page-section">
+  <div class="container">
+
+    <div class="review-hero-card mb-4">
+      <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+        <div>
+          <div class="section-eyebrow">Superadmin Review Monitor</div>
+          <h1 class="review-title">Platform Ratings & Reviews</h1>
+          <p class="section-subtitle mb-0">
+            Monitor trust, quality, and user satisfaction across skill exchanges.
+          </p>
+        </div>
+
+        <a href="{{ url_for('superadmin_dashboard') }}" class="premium-btn premium-btn-soft">
+          Back to Dashboard
+        </a>
+      </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+      <div class="col-md-3">
+        <div class="review-stat-card">
+          <div class="stat-number">{{ review_stats.total_reviews }}</div>
+          <div class="text-muted fw-bold">Total Reviews</div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="review-stat-card">
+          <div class="stat-number">{{ review_stats.average_rating }}</div>
+          <div class="text-muted fw-bold">Average Rating</div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="review-stat-card">
+          <div class="stat-number">{{ review_stats.five_star_reviews }}</div>
+          <div class="text-muted fw-bold">5 Star Reviews</div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="review-stat-card">
+          <div class="stat-number">{{ review_stats.low_reviews }}</div>
+          <div class="text-muted fw-bold">Low Reviews</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="review-panel">
+      <div class="d-flex gap-2 flex-wrap mb-4">
+        <a href="{{ url_for('admin_reviews', rating='all') }}"
+           class="btn btn-sm rounded-pill {% if rating_filter == 'all' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+          All
+        </a>
+
+        {% for number in [5, 4, 3, 2, 1] %}
+          <a href="{{ url_for('admin_reviews', rating=number) }}"
+             class="btn btn-sm rounded-pill {% if rating_filter == number|string %}btn-primary{% else %}btn-outline-primary{% endif %}">
+            {{ number }} Star
+          </a>
+        {% endfor %}
+      </div>
+
+      <div class="table-responsive">
+        <table class="table align-middle">
+          <thead>
+            <tr>
+              <th>Reviewer</th>
+              <th>Reviewed User</th>
+              <th>Rating</th>
+              <th>Review</th>
+              <th>Exchange</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for review in all_reviews %}
+              <tr>
+                <td>{{ review.reviewer.full_name }}</td>
+                <td>{{ review.reviewed_user.full_name }}</td>
+                <td><span class="review-rating-badge">{{ review.rating }} ★</span></td>
+                <td>
+                  {{ review.review_text[:90] if review.review_text else 'No written review' }}
+                  {% if review.review_text and review.review_text|length > 90 %}...{% endif %}
+                </td>
+                <td>
+                  {{ review.exchange_request.requested_skill }}
+                  for
+                  {{ review.exchange_request.offered_skill }}
+                </td>
+                <td>{{ review.created_at.strftime('%d %b %Y') }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      {% if not all_reviews %}
+        <div class="review-empty-state">
+          <i class="bi bi-star"></i>
+          <h5 class="fw-black mt-3">No reviews found</h5>
+          <p class="text-muted mb-0">Reviews will appear after learners submit feedback.</p>
+        </div>
+      {% endif %}
+    </div>
+
+  </div>
+</section>
+{% endblock %}

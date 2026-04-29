@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Login | SkillSwap AI{% endblock %}
+
+{% block content %}
+<section class="auth-wrapper">
+  <div class="container">
+    <div class="row justify-content-center align-items-center g-5">
+      <div class="col-lg-5">
+        <div class="auth-card glass-card">
+          <div class="text-center mb-4">
+            <span class="brand-logo mx-auto mb-3">S</span>
+            <h2 class="fw-black mb-1">Welcome back</h2>
+            <p class="text-muted">Login to continue your peer learning journey.</p>
+          </div>
+
+          <form method="POST">
+            <div class="mb-3">
+              <label class="form-label">Email Address</label>
+              <input type="email" name="email" class="form-control form-control-lg" placeholder="you@example.com" required>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Password</label>
+              <input type="password" name="password" class="form-control form-control-lg" placeholder="Enter password" required>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+              <small class="text-muted">Secure login enabled</small>
+              <a href="{{ url_for('forgot_password') }}" class="fw-bold">Forgot Password?</a>
+            </div>
+
+            <button class="premium-btn premium-btn-primary w-100" type="submit">
+              Login <i class="bi bi-arrow-right ms-1"></i>
+            </button>
+          </form>
+
+          <div class="text-center mt-4">
+            <p class="text-muted mb-0">New here? <a class="fw-bold" href="{{ url_for('register') }}">Create account</a></p>
+          </div>
+
+          <div class="alert alert-info mt-4 mb-0">
+            <strong>Superadmin:</strong><br>
+            admin@skillswap.com / admin123
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-5 d-none d-lg-block">
+        <div class="premium-card p-5">
+          <div class="section-eyebrow">Dashboard Preview</div>
+          <h2 class="section-title fs-1">Track learning progress beautifully.</h2>
+          <p class="section-subtitle">View skills, matches, reviews, and exchange requests from one modern dashboard.</p>
+
+          <div class="row g-3 mt-4">
+            <div class="col-6"><div class="stat-card"><div class="stat-number">12</div><small class="text-muted">Skills</small></div></div>
+            <div class="col-6"><div class="stat-card"><div class="stat-number">08</div><small class="text-muted">Matches</small></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

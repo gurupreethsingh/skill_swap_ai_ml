@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}My Chats | SkillSwap AI{% endblock %}
+{% block content %}
+<section class="chat-page-section">
+  <div class="container">
+    <div class="chat-hero-card mb-4">
+      <h1 class="chat-title">My Learning Chats</h1>
+      <p class="section-subtitle">Chats open only after a request is accepted.</p>
+    </div>
+
+    <div class="row g-4 mb-4">
+      <div class="col-md-3"><div class="chat-stat-card"><div class="stat-number">{{ chat_stats.accepted_requests }}</div><div class="text-muted fw-bold">Accepted</div></div></div>
+      <div class="col-md-3"><div class="chat-stat-card"><div class="stat-number">{{ chat_stats.active_chats }}</div><div class="text-muted fw-bold">Active Chats</div></div></div>
+      <div class="col-md-3"><div class="chat-stat-card"><div class="stat-number">{{ chat_stats.total_messages }}</div><div class="text-muted fw-bold">Messages</div></div></div>
+      <div class="col-md-3"><div class="chat-stat-card"><div class="stat-number">{{ chat_stats.unread_messages }}</div><div class="text-muted fw-bold">Unread</div></div></div>
+    </div>
+
+    <div class="chat-list-card">
+      {% if chat_rows %}
+        <div class="row g-3">
+          {% for item in chat_rows %}
+          <div class="col-lg-6">
+            <a href="{{ url_for('chat_room', request_id=item.request.id) }}" class="chat-thread-card">
+              <div class="d-flex justify-content-between align-items-start gap-3">
+                <div>
+                  <h5 class="fw-black mb-1">{{ item.other_user.full_name }}</h5>
+                  <p class="text-muted mb-0 small">{{ item.request.requested_skill }} for {{ item.request.offered_skill }}</p>
+                </div>
+                {% if item.unread_count > 0 %}
+                  <span class="chat-unread-badge">{{ item.unread_count }}</span>
+                {% endif %}
+              </div>
+              <div class="chat-last-message mt-3">
+                {% if item.last_message %}
+                  {{ item.last_message.message[:90] }}{% if item.last_message.message|length > 90 %}...{% endif %}
+                {% else %}
+                  <span class="text-muted">No messages yet.</span>
+                {% endif %}
+              </div>
+            </a>
+          </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="chat-empty-state">
+          <i class="bi bi-chat-dots"></i>
+          <h4 class="fw-black mt-3">No chats yet</h4>
+          <p class="text-muted mb-0">Accept a request to start chatting.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}

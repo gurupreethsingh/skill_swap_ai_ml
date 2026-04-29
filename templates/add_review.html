@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}Add Review | SkillSwap AI{% endblock %}
+
+{% block content %}
+<section class="review-page-section">
+  <div class="container">
+    <div class="review-hero-card mb-4">
+      <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+        <div>
+          <div class="section-eyebrow">Module 5 Review System</div>
+          <h1 class="review-title">Review {{ reviewed_user.full_name }}</h1>
+          <p class="section-subtitle mb-0">
+            Rate your skill exchange experience and help improve trust on the platform.
+          </p>
+        </div>
+
+        <a href="{{ url_for('my_reviews') }}" class="premium-btn premium-btn-soft">
+          My Reviews
+        </a>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-lg-5">
+        <div class="review-panel h-100">
+          <h4 class="fw-black mb-3">Exchange Details</h4>
+
+          <div class="review-detail-box mb-3">
+            <span class="text-muted">Requested Skill</span>
+            <strong>{{ exchange_request.requested_skill }}</strong>
+          </div>
+
+          <div class="review-detail-box mb-3">
+            <span class="text-muted">Offered Skill</span>
+            <strong>{{ exchange_request.offered_skill }}</strong>
+          </div>
+
+          <div class="review-detail-box mb-3">
+            <span class="text-muted">Reviewed User</span>
+            <strong>{{ reviewed_user.full_name }}</strong>
+          </div>
+
+          <p class="text-muted mb-0">
+            Reviews are allowed only after a request is accepted.
+          </p>
+        </div>
+      </div>
+
+      <div class="col-lg-7">
+        <div class="review-panel">
+          <h4 class="fw-black mb-4">Submit Review</h4>
+
+          <form method="POST">
+            <div class="mb-4">
+              <label class="form-label">Rating</label>
+              <select name="rating" class="form-select form-select-lg" required>
+                <option value="">Select rating</option>
+                <option value="5">★★★★★ Excellent</option>
+                <option value="4">★★★★ Very Good</option>
+                <option value="3">★★★ Good</option>
+                <option value="2">★★ Average</option>
+                <option value="1">★ Poor</option>
+              </select>
+            </div>
+
+            <div class="mb-4">
+              <label class="form-label">Review Message</label>
+              <textarea
+                name="review_text"
+                class="form-control"
+                rows="6"
+                placeholder="Write about communication, teaching quality, helpfulness, and overall experience..."
+              ></textarea>
+            </div>
+
+            <div class="d-flex gap-2 flex-wrap">
+              <button type="submit" class="premium-btn premium-btn-primary">
+                Submit Review
+              </button>
+
+              <a href="{{ url_for('my_requests') }}" class="premium-btn premium-btn-soft">
+                Cancel
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+{% endblock %}

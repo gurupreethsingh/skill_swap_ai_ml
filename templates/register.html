@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Register | SkillSwap AI{% endblock %}
+
+{% block content %}
+<section class="auth-wrapper">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-xl-8 col-lg-9">
+        <div class="auth-card glass-card">
+          <div class="row g-4 align-items-center">
+            <div class="col-lg-5">
+              <div class="section-eyebrow">Join SkillSwap</div>
+              <h2 class="section-title fs-1 mb-3">Create your skill profile.</h2>
+              <p class="text-muted">
+                Add what you can teach and what you want to learn. Your profile becomes the base for AI matching.
+              </p>
+
+              <div class="d-flex flex-wrap gap-2 mt-4">
+                <span class="skill-pill">Python</span>
+                <span class="skill-pill">Design</span>
+                <span class="skill-pill">Excel</span>
+                <span class="skill-pill">Communication</span>
+              </div>
+            </div>
+
+            <div class="col-lg-7">
+              <form method="POST">
+                <div class="mb-3">
+                  <label class="form-label">Full Name</label>
+                  <input type="text" name="full_name" class="form-control form-control-lg" placeholder="Enter full name" required>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label">Email Address</label>
+                  <input type="email" name="email" class="form-control form-control-lg" placeholder="you@example.com" required>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label">Password</label>
+                  <input type="password" name="password" class="form-control form-control-lg" placeholder="Create password" required>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label">Skills You Can Teach</label>
+                  <input type="text" name="skills_offered" class="form-control form-control-lg" placeholder="Python, Flask, Excel">
+                </div>
+
+                <div class="mb-4">
+                  <label class="form-label">Skills You Want To Learn</label>
+                  <input type="text" name="skills_wanted" class="form-control form-control-lg" placeholder="Graphic Design, Public Speaking">
+                </div>
+
+                <button class="premium-btn premium-btn-primary w-100" type="submit">
+                  Create Account <i class="bi bi-stars ms-1"></i>
+                </button>
+              </form>
+
+              <p class="text-center text-muted mt-4 mb-0">
+                Already registered? <a class="fw-bold" href="{{ url_for('login') }}">Login here</a>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

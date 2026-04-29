@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Admin Chats | SkillSwap AI{% endblock %}
+{% block content %}
+<section class="chat-page-section">
+  <div class="container">
+    <div class="chat-hero-card mb-4">
+      <h1 class="chat-title">Platform Chat Activity</h1>
+      <p class="section-subtitle">Superadmin chat monitor.</p>
+    </div>
+
+    <div class="row g-4 mb-4">
+      <div class="col-md-3"><div class="chat-stat-card"><div class="stat-number">{{ chat_stats.total_messages }}</div><div class="text-muted fw-bold">Messages</div></div></div>
+      <div class="col-md-3"><div class="chat-stat-card"><div class="stat-number">{{ chat_stats.unread_messages }}</div><div class="text-muted fw-bold">Unread</div></div></div>
+      <div class="col-md-3"><div class="chat-stat-card"><div class="stat-number">{{ chat_stats.active_chats }}</div><div class="text-muted fw-bold">Active Chats</div></div></div>
+      <div class="col-md-3"><div class="chat-stat-card"><div class="stat-number">{{ chat_stats.active_senders }}</div><div class="text-muted fw-bold">Active Senders</div></div></div>
+    </div>
+
+    <div class="chat-list-card">
+      <div class="table-responsive">
+        <table class="table align-middle">
+          <thead><tr><th>Sender</th><th>Receiver</th><th>Message</th><th>Date</th></tr></thead>
+          <tbody>
+            {% for msg in all_messages %}
+            <tr>
+              <td>{{ msg.sender.full_name }}</td>
+              <td>{{ msg.receiver.full_name }}</td>
+              <td>{{ msg.message[:80] }}{% if msg.message|length > 80 %}...{% endif %}</td>
+              <td>{{ msg.created_at.strftime('%d %b %Y') }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% if not all_messages %}
+        <p class="text-muted mb-0">No chat messages yet.</p>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}
